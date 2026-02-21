@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { SobreMim } from './pages/SobreMim'
+import { Projetos } from './pages/Projetos'
+import { Experiencias } from './pages/Experiencias'
+import { Contato } from './pages/Contato'
 
 function App() {
   // Esse estado controla se o livro está na Capa (false) ou Aberto (true)
@@ -66,29 +70,20 @@ function App() {
           {/* PÁGINA DIREITA (O CONTEÚDO DINÂMICO) */}
           <main className="w-full md:w-2/3 p-8">
             {paginaAtual === 'sobre_mim' && (
-              <div>
-                <h2 className="text-4xl font-medieval mb-4">Capítulo I: Sobre Mim</h2>
-                <p className="text-lg leading-relaxed">
-                  Aqui contarei a lenda do desenvolvedor Gustavo, suas habilidades, e como ele domina as artes do Node.js, React e SQLite...
-                </p>
-              </div>
+              <SobreMim />
             )}
 
             {paginaAtual === 'projetos' && (
-              <div>
-                <h2 className="text-4xl font-medieval mb-4">Capítulo II: Projetos</h2>
-                <p className="text-lg leading-relaxed">
-                  Os artefatos mágicos criados. Aqui entrará a linha do tempo.
-                </p>
-              </div>
+              <Projetos />
             )}
             
             {/* Adicionaremos os outros componentes depois */}
-            {(paginaAtual === 'experiencias' || paginaAtual === 'contato') && (
-              <div>
-                <h2 className="text-4xl font-medieval mb-4">Em construção...</h2>
-                <p>Os monges ainda estão escrevendo esta página.</p>
-              </div>
+            {paginaAtual === 'experiencias' && (
+              <Experiencias />
+            )}
+            
+            {paginaAtual === 'contato' && (
+              <Contato />
             )}
           </main>
         </div>
