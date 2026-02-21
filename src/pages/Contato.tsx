@@ -1,20 +1,42 @@
 import { useState } from 'react';
+import emailjs from '@emailjs/browser';
 
 export function Contato() {
-  // Estado para controlar o que o usuário digita no formulário
   const [formData, setFormData] = useState({ nome: '', email: '', mensagem: '' });
   const [enviado, setEnviado] = useState(false);
+  const [carregando, setCarregando] = useState(false);
 
-  // Função que roda quando o usuário clica em Enviar
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // Evita que a página recarregue
-    
-    // Aqui no futuro podemos integrar o EmailJS para enviar o email de verdade
-    console.log("Mensagem enviada pelos corvos:", formData);
-    
-    setEnviado(true);
-    setTimeout(() => setEnviado(false), 3000); // O botão volta ao normal depois de 3 segundos
-    setFormData({ nome: '', email: '', mensagem: '' }); // Limpa o formulário
+    e.preventDefault(); 
+    setCarregando(true); // Muda o botão para "Enviando..."
+
+    // Prepara o pacote com as variáveis exatas que você criou no EmailJS
+    const templateParams = {
+      nome: formData.nome,
+      email: formData.email,
+      mensagem: formData.mensagem,
+    };
+
+    // A Invocação dos Corvos (EmailJS)
+    emailjs.send(
+      'service_qb3jail',    // Seu Service ID
+      'template_sp9e5tu',   // Seu Template ID
+      templateParams,       // Os dados do usuário
+      'glAb3wFpmONFLHLAL'   // Sua Public Key
+    )
+    .then((response) => {
+      console.log('Mensagem enviada com sucesso!', response.status, response.text);
+      setEnviado(true);
+      setCarregando(false);
+      setFormData({ nome: '', email: '', mensagem: '' }); // Limpa o formulário
+      
+      setTimeout(() => setEnviado(false), 4000); // Volta ao normal após 4 segundos
+    })
+    .catch((error) => {
+      console.error('O corvo se perdeu no caminho...', error);
+      setCarregando(false);
+      alert('A magia falhou! Não foi possível enviar a mensagem no momento.');
+    });
   };
 
   return (
@@ -39,7 +61,7 @@ export function Contato() {
             <a href="https://wa.me/5531985559698" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:font-bold transition-all">
               <span>💬</span> WhatsApp: (31) 98555-9698
             </a>
-            <a href="https://www.linkedin.com/in/gustavo-pessoa-205759239/" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:font-bold transition-all">
+            <a href="https://linkedin.com/in/SEU-LINKEDIN" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:font-bold transition-all">
               <span>📜</span> Meu LinkedIn Oficial
             </a>
             <a href="https://github.com/GustavoFirmino" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:font-bold transition-all">
@@ -49,16 +71,15 @@ export function Contato() {
 
           <h3 className="text-2xl font-bold mb-4 border-t border-tinta/30 pt-4">Arquivos da Guilda (Download)</h3>
           <div className="flex flex-col gap-3">
-            {/* O atributo "download" avisa o navegador para baixar em vez de abrir */}
             <a 
-              href="/Currículo_Gustavo_PF_2026.pdf" 
+              href="/Curriculo_Gustavo_PT.pdf" 
               download 
               className="px-4 py-2 bg-tinta text-pergaminho text-center font-bold hover:bg-opacity-80 transition-colors border-2 border-tinta hover:border-transparent w-full"
             >
               Baixar Currículo (Português) 🇧🇷
             </a>
             <a 
-              href="/Currículo_Gustavo_EN_2026.pdf" 
+              href="/Curriculo_Gustavo_EN.pdf" 
               download 
               className="px-4 py-2 bg-tinta text-pergaminho text-center font-bold hover:bg-opacity-80 transition-colors border-2 border-tinta hover:border-transparent w-full"
             >
@@ -109,9 +130,14 @@ export function Contato() {
 
             <button 
               type="submit"
-              className="mt-2 px-6 py-3 bg-tinta text-pergaminho font-bold text-lg hover:bg-opacity-80 transition-all cursor-pointer border-2 border-tinta"
+              disabled={carregando}
+              className={`mt-2 px-6 py-3 font-bold text-lg transition-all border-2 border-tinta ${
+                carregando 
+                  ? 'bg-tinta/50 text-pergaminho cursor-wait' 
+                  : 'bg-tinta text-pergaminho hover:bg-opacity-80 cursor-pointer'
+              }`}
             >
-              {enviado ? 'Corvo Enviado! 🦅' : 'Enviar Mensagem ✉️'}
+              {carregando ? 'Convocando corvo...' : enviado ? 'Corvo Enviado! 🦅' : 'Enviar Mensagem ✉️'}
             </button>
           </form>
         </div>
