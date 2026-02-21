@@ -1,7 +1,7 @@
 # Portfólio Profissional - As Crônicas de Gustavo 🗡️📜
 
 **Disciplina:** Laboratório de Desenvolvimento de Software
-**Sprint:** 01 (Lab01S01)
+**Sprint:** 01 
 
 ## 📖 Descrição do Projeto
 Este projeto é um website de portfólio profissional interativo, construído com a temática e o design de um **livro épico medieval**. O objetivo é apresentar minha trajetória, habilidades, projetos (artefatos) e formas de contato de maneira criativa, moderna e imersiva, substituindo a rolagem tradicional por uma navegação estilo "sumário e páginas".
