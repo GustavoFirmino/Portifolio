@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #f4e4bc; /* Fundo padrão pergaminho */
+  color: #2c1e16; /* Texto cor de tinta */
+}
