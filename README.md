@@ -25,12 +25,12 @@ Abaixo está a evolução da forja deste artefato, desde os wireframes iniciais 
 ![Wireframe do Livro](./docs/wireframe-livro-aberto.png)
 
 ### O Tomo Atual (Sprint 03)
-![Screenshot Atual do Tomo - Tela Incial](./docs/docs/Tela-Inicial.png) 
-![Screenshot Atual do Tomo - Índice](./docs/docs/Índice.png)
-![Screenshot Atual do Tomo - Sobre mim](./docs/docs/Sobre-mim.png)
-![Screenshot Atual do Tomo - Projetos](./docs/docs/Projetos.png)
-![Screenshot Atual do Tomo - Jornada](./docs/docs/Jornada.png)
-![Screenshot Atual do Tomo - Contatos](./docs/docs/Contato.png)
+![Screenshot Atual do Tomo - Tela Incial](./docs/Tela-Inicial.png) 
+![Screenshot Atual do Tomo - Índice](./docs/Índice.png)
+![Screenshot Atual do Tomo - Sobre mim](./docs/Sobre-mim.png)
+![Screenshot Atual do Tomo - Projetos](./docs/Projetos.png)
+![Screenshot Atual do Tomo - Jornada](./docs/Jornada.png)
+![Screenshot Atual do Tomo - Contatos](./docs/Contato.png)
 
 
 ## ⚙️ Funcionalidades Implementadas (Sprint 03)
