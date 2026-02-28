@@ -1,82 +1,106 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { dicionario } from '../dicionario';
 
-// Aqui fica a lista dos seus projetos mágicos. Fica fácil adicionar mais depois!
+interface ProjetosProps {
+  voltar: () => void;
+  idioma: 'pt' | 'en';
+  toggleIdioma: () => void;
+}
+
 const listaProjetos = [
   {
     id: 1,
-    titulo: "O Épico Portfólio (Este Tomo)",
-    data: "Fevereiro 2026",
-    descricao: "Um website interativo com temática medieval, desenvolvido em formato de livro épico para apresentar minha jornada profissional, substituindo a rolagem comum por uma navegação imersiva.",
-    tecnologias: ["React", "TypeScript", "Tailwind CSS", "Vite"],
+    titulo: { pt: "O Épico Portfólio (Este Tomo)", en: "The Epic Portfolio (This Tome)" },
+    data: { pt: "Fevereiro 2026", en: "February 2026" },
+    descricao: { 
+      pt: "Um website interativo com temática medieval, desenvolvido em formato de livro épico para apresentar minha jornada profissional, substituindo a rolagem comum por uma navegação imersiva e cinematográfica.",
+      en: "An interactive medieval-themed website, developed in an epic book format to present my professional journey, replacing standard scrolling with an immersive and cinematic navigation."
+    },
+    tecnologias: ["React", "TypeScript", "Tailwind CSS", "Framer Motion"],
     github: "https://github.com/GustavoFirmino/Portifolio",
-    imagem: "https://via.placeholder.com/600x300.png?text=Capa+do+Livro+(GIF+em+breve)" 
+    imagem: "https://via.placeholder.com/600x400/2c1e16/f4e8d1?text=A+Forja+do+Grimorio" 
   },
   {
     id: 2,
-    titulo: "Sistema Fullstack: Carrinho e Estoque",
-    data: "Janeiro 2026",
-    descricao: "Uma plataforma robusta com carrinho de compras e controle de estoque. Desenvolvida com arquitetura em camadas (MVC/Services) no backend para garantir regras de negócio complexas, como limites de itens.",
-    tecnologias: ["Node.js", "Express", "Prisma ORM", "SQLite", "React", "Context API"],
-    github: "#", // Depois você coloca o link do repositório desse projeto
-    imagem: "https://via.placeholder.com/600x300.png?text=E-commerce+(Imagem+em+breve)"
+    titulo: { pt: "Sistema Fullstack: Carrinho e Estoque", en: "Fullstack System: Cart & Inventory" },
+    data: { pt: "Janeiro 2026", en: "January 2026" },
+    descricao: {
+      pt: "Uma plataforma robusta com carrinho de compras e controle de estoque. Desenvolvida com arquitetura em camadas no backend para garantir regras de negócio complexas, como limites de itens.",
+      en: "A robust platform with a shopping cart and inventory control. Developed with layered backend architecture to ensure complex business rules, such as item limits."
+    },
+    tecnologias: ["Node.js", "Express", "Prisma ORM", "SQLite", "React"],
+    github: "#", 
+    imagem: "https://via.placeholder.com/600x400/2c1e16/f4e8d1?text=Mercador+E-commerce"
   }
 ];
 
-export function Projetos() {
+export function Projetos({ voltar, idioma, toggleIdioma }: ProjetosProps) {
+  const [pagina, setPagina] = useState(0);
+  const projetoAtual = listaProjetos[pagina];
+  const t = dicionario[idioma];
+
+  const proximaPagina = () => { if (pagina < listaProjetos.length - 1) setPagina(pagina + 1); };
+  const paginaAnterior = () => { if (pagina > 0) setPagina(pagina - 1); };
+
   return (
-    <div className="animate-fade-in">
-      <h2 className="text-4xl font-medieval font-bold mb-8 border-b border-tinta pb-2">
-        Capítulo II: Crônicas de Projetos
-      </h2>
-      
-      {/* A Linha Vertical da Timeline */}
-      <div className="relative border-l-4 border-tinta ml-4 space-y-12 pb-8">
-        
-        {listaProjetos.map((proj) => (
-          <div key={proj.id} className="pl-8 relative">
-            {/* O "Ponto" da linha do tempo */}
-            <div className="absolute w-5 h-5 bg-pergaminho border-4 border-tinta rounded-full -left-[12px] top-2"></div>
+    <div className="flex w-full h-full">
+      <div className="w-full md:w-1/2 border-b-2 md:border-b-0 md:border-r-[1px] border-[#2c1e16]/20 p-8 md:p-12 flex flex-col relative">
+        <button onClick={voltar} className="self-start text-lg font-bold hover:text-[#7a0000] hover:-translate-x-2 transition-transform cursor-pointer mb-8 flex items-center gap-2">
+          {t.geral.voltarSumario}
+        </button>
+
+        <h2 className="text-4xl font-medieval font-bold mb-6 border-b-2 border-[#5c1616] pb-2 text-[#2c1e16]">
+          {t.projetos.titulo}
+        </h2>
+
+        <AnimatePresence mode="wait">
+          <motion.div key={pagina} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className="flex-1 flex flex-col">
+            <span className="text-sm font-bold bg-[#5c1616] text-[#f4e8d1] px-3 py-1 rounded-sm mb-4 self-start shadow-md">
+              {projetoAtual.data[idioma]}
+            </span>
+            <h3 className="text-3xl font-medieval font-bold mb-4 text-[#2c1e16] leading-tight">{projetoAtual.titulo[idioma]}</h3>
             
-            {/* O Card do Projeto (Como se fosse um recado colado no pergaminho) */}
-            <div className="bg-[#e8d5a5] p-6 border-2 border-tinta rounded-sm shadow-lg">
-              <span className="text-sm font-bold bg-tinta text-pergaminho px-3 py-1 rounded-sm mb-4 inline-block">
-                {proj.data}
-              </span>
-              
-              <h3 className="text-3xl font-medieval font-bold mb-2">{proj.titulo}</h3>
-              <p className="text-lg mb-4 text-justify">{proj.descricao}</p>
-              
-              {/* Badges de Tecnologias */}
-              <div className="mb-6 flex flex-wrap gap-2">
-                {proj.tecnologias.map(tech => (
-                  <span key={tech} className="text-sm font-bold border-2 border-tinta px-2 py-1 bg-pergaminho">
-                    {tech}
-                  </span>
-                ))}
-              </div>
-
-              {/* Caixa da Imagem com Efeito de "Pintura Antiga" (Preto e Branco que fica colorido ao passar o mouse) */}
-              <div className="border-4 border-tinta mb-6 overflow-hidden">
-                <img 
-                  src={proj.imagem} 
-                  alt={`Preview de ${proj.titulo}`} 
-                  className="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-500" 
-                />
-              </div>
-              
-              {/* Botão do GitHub */}
-              <a 
-                href={proj.github} 
-                target="_blank" 
-                rel="noreferrer" 
-                className="inline-block px-6 py-2 bg-tinta text-pergaminho font-bold hover:bg-opacity-80 transition-colors border-2 border-tinta hover:border-transparent"
-              >
-                Inspecionar Código (GitHub) 📜
-              </a>
+            <div className="mb-6 flex flex-wrap gap-2">
+              {projetoAtual.tecnologias.map(tech => (
+                <span key={tech} className="text-xs font-bold border border-[#2c1e16] px-2 py-1 bg-[#f4e8d1] shadow-sm">{tech}</span>
+              ))}
             </div>
-          </div>
-        ))}
 
+            <div className="border-4 border-[#2c1e16] mt-auto overflow-hidden shadow-md">
+              <img src={projetoAtual.imagem} alt="Preview" className="w-full h-48 object-cover sepia-[.3] hover:sepia-0 transition-all duration-500" />
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col relative justify-center">
+        <div className="flex justify-end mb-8 w-full shrink-0">
+          <button onClick={toggleIdioma} className="px-3 py-1 border border-[#2c1e16] hover:bg-[#2c1e16] hover:text-[#f4e8d1] transition-all text-sm font-bold cursor-pointer rounded-sm">
+            {t.geral.botaoIdioma}
+          </button>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div key={pagina} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className="flex-1 flex flex-col justify-center">
+            <h4 className="text-2xl font-bold mb-4 text-[#5c1616]">{t.projetos.sobreArtefato}</h4>
+            <p className="text-xl mb-8 text-justify font-medium leading-relaxed">{projetoAtual.descricao[idioma]}</p>
+            
+            <a href={projetoAtual.github} target="_blank" rel="noreferrer" className="text-center px-6 py-3 bg-[#2c1e16] text-[#f4e8d1] font-bold hover:bg-[#5c1616] transition-colors border-2 border-transparent hover:border-[#2c1e16] shadow-lg w-full max-w-xs mx-auto mb-12">
+              {t.projetos.btnGithub}
+            </a>
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="mt-auto border-t-2 border-[#2c1e16]/30 pt-4 flex justify-between items-center text-lg font-bold">
+          <button onClick={paginaAnterior} disabled={pagina === 0} className={`flex items-center gap-2 transition-all ${pagina === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:text-[#5c1616] hover:-translate-x-1 cursor-pointer'}`}>
+            {t.projetos.btnAnterior}
+          </button>
+          <span className="font-medieval text-xl text-[#5c1616]">{pagina + 1} / {listaProjetos.length}</span>
+          <button onClick={proximaPagina} disabled={pagina === listaProjetos.length - 1} className={`flex items-center gap-2 transition-all ${pagina === listaProjetos.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-[#5c1616] hover:translate-x-1 cursor-pointer'}`}>
+            {t.projetos.btnProximo}
+          </button>
+        </div>
       </div>
     </div>
   );

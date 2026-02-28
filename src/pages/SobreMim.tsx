@@ -1,49 +1,46 @@
-import { useState } from 'react';
+import { dicionario } from '../dicionario';
 
-export function SobreMim() {
-  const [idioma, setIdioma] = useState<'pt' | 'en'>('pt');
+interface SobreMimProps {
+  voltar: () => void;
+  idioma: 'pt' | 'en';
+  toggleIdioma: () => void;
+}
+
+export function SobreMim({ voltar, idioma, toggleIdioma }: SobreMimProps) {
+  const t = dicionario[idioma];
 
   return (
-    <div className="animate-fade-in">
-      <div className="flex justify-between items-end mb-6 border-b border-tinta pb-2">
-        <h2 className="text-4xl font-medieval font-bold">
-          {idioma === 'pt' ? 'Capítulo I: Sobre Mim' : 'Chapter I: About Me'}
-        </h2>
-        
-        <button
-          onClick={() => setIdioma(idioma === 'pt' ? 'en' : 'pt')}
-          className="px-4 py-1 border-2 border-tinta hover:bg-tinta hover:text-pergaminho transition-all duration-300 text-sm font-bold cursor-pointer"
-        >
-          {idioma === 'pt' ? 'Read in English 🇬🇧' : 'Ler em Português 🇧🇷'}
+    <div className="flex w-full h-full">
+      <div className="w-full md:w-1/2 border-b-2 md:border-b-0 md:border-r-[1px] border-[#2c1e16]/20 p-8 md:p-12 flex flex-col relative">
+        <button onClick={voltar} className="self-start text-lg font-bold hover:text-[#7a0000] hover:-translate-x-2 transition-transform cursor-pointer mb-8 flex items-center gap-2">
+          {t.geral.voltarSumario}
         </button>
+
+        <div className="flex justify-between items-start mb-6 gap-4 border-b-2 border-[#5c1616] pb-2">
+          <h2 className="text-4xl font-medieval font-bold text-[#2c1e16] leading-none">
+            {t.sobreMim.titulo}
+          </h2>
+        </div>
+
+        <div className="text-xl leading-relaxed text-justify flex-1">
+          <p className="first-letter:text-7xl first-letter:font-medieval first-letter:font-bold first-letter:text-[#7a0000] first-letter:float-left first-letter:mr-3 first-letter:mt-[-8px] first-letter:leading-none">
+            {t.sobreMim.p1_1}<strong>Gustavo Firmino</strong>{t.sobreMim.p1_2}<strong>React</strong>{t.sobreMim.p1_3}
+          </p>
+        </div>
       </div>
 
-      <div className="text-lg leading-relaxed space-y-4 text-justify">
-        {idioma === 'pt' ? (
-          <>
-            <p>
-              Saudações, viajante! Meu nome é <strong>Gustavo Firmino</strong>. Sou um desenvolvedor Fullstack forjado nas artes de criar sistemas web robustos e arquiteturas limpas.
-            </p>
-            <p>
-              Em minha jornada, escolhi como principais armas o <strong>React</strong> para moldar interfaces dinâmicas e interativas, e o <strong>Node.js</strong> com bancos de dados relacionais (como SQLite e Prisma) para sustentar a lógica pesada e a segurança nos bastidores.
-            </p>
-            <p>
-              Sou fascinado por transformar ideias complexas em soluções digitais eficientes. Meu foco atual é evoluir meu grimório de programação, desbravando novos desafios técnicos, construindo APIs escaláveis e garantindo que cada linha de código contribua para uma experiência de usuário épica.
-            </p>
-          </>
-        ) : (
-          <>
-            <p>
-              Greetings, traveler! My name is <strong>Gustavo Firmino</strong>. I am a Fullstack developer forged in the arts of creating robust web systems and clean architectures.
-            </p>
-            <p>
-              In my journey, I have chosen <strong>React</strong> as my main weapon to shape dynamic and interactive interfaces, alongside <strong>Node.js</strong> and relational databases (like SQLite and Prisma) to uphold heavy logic and security behind the scenes.
-            </p>
-            <p>
-              I am fascinated by transforming complex ideas into efficient digital solutions. My current focus is evolving my programming grimoire, braving new technical challenges, building scalable APIs, and ensuring every line of code contributes to an epic user experience.
-            </p>
-          </>
-        )}
+      <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col relative">
+        <div className="flex justify-end mb-6 w-full shrink-0">
+          <button onClick={toggleIdioma} className="px-3 py-1 border border-[#2c1e16] hover:bg-[#2c1e16] hover:text-[#f4e8d1] transition-all text-sm font-bold cursor-pointer rounded-sm">
+            {t.geral.botaoIdioma}
+          </button>
+        </div>
+
+        <div className="text-xl leading-relaxed space-y-6 text-justify flex-1">
+          <p>{t.sobreMim.p2_1}<strong>Node.js</strong>{t.sobreMim.p2_2}</p>
+          <p>{t.sobreMim.p3}</p>
+        </div>
+        <div className="absolute bottom-6 right-12 text-[#2c1e16]/50 font-medieval font-bold text-xl">- 1 -</div>
       </div>
     </div>
   );
