@@ -59,7 +59,7 @@ export default function App() {
       <AnimatePresence mode="wait">
         {!livroAberto ? (
           <motion.div key="capa" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 1.2, opacity: 0, rotateY: -90 }} transition={{ duration: 0.8, ease: "easeInOut" }} className="relative w-full max-w-md h-[600px] border-[14px] border-[#2c1e16] rounded-r-3xl rounded-l-md shadow-[30px_30px_30px_rgba(0,0,0,0.9)] flex flex-col items-center justify-center p-8 z-10" style={{ backgroundImage: `url('https://www.transparenttextures.com/patterns/leather.png')`, backgroundColor: '#4a3320', backgroundBlendMode: 'multiply' }}>
-            <div className="absolute -bottom-16 right-12 w-10 h-24 bg-[#7a0000] shadow-[5px_5px_10px_rgba(0,0,0,0.7)] z-[-1]" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 15px), 0 100%)' }}></div>
+            <div className="absolute -bottom-16 left-16 w-10 h-24 bg-[#7a0000] shadow-[5px_5px_10px_rgba(0,0,0,0.7)] z-[-1]" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 15px), 0 100%)' }}></div>
             <div className="absolute inset-4 border-4 border-[#2c1e16] opacity-80 rounded-r-xl rounded-l-sm shadow-inner pointer-events-none z-0"></div>
             <div className="absolute inset-8 border-2 border-[#2c1e16] opacity-50 rounded-r-lg rounded-l-sm pointer-events-none z-0"></div>
             <div className="absolute left-0 top-0 bottom-0 w-16 bg-[#1f150f] border-r-4 border-[#120c08] shadow-[10px_0_20px_rgba(0,0,0,0.7)] z-0"></div>
