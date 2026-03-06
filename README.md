@@ -31,7 +31,7 @@ Abaixo está a evolução do projeto, desde os wireframes iniciais (Sprint 01) a
 ![Wireframe do Livro](./docs/wireframe-livro-aberto.png)
 
 ### O Tomo Atual (Sprint 03)
-![GIF Atual do Tomo](.public/portifolio-ezgif.com-video-to-gif-converter.gif) 
+![GIF Atual do Tomo](./public/portifolio-ezgif.com-video-to-gif-converter.gif) 
 
 ## 📂 Estrutura de Diretórios
 ```text
@@ -58,15 +58,19 @@ Para inspecionar o código e abrir o livro em sua própria máquina, siga os pas
    git clone [https://github.com/GustavoFirmino/Portifolio.git](https://github.com/GustavoFirmino/Portifolio.git)
 
 2. Acesse a pasta do projeto:
+   
    cd Portifolio
 
 3. Invoque as dependências padrão:
+   
    npm install
 
 4. ⚠️ Solução de Problemas: Caso tenha baixado o projeto via .zip direto do GitHub e o terminal retorne um erro informando a falta de dependências (como framer-motion), assegure a instalação das bibliotecas externas rodando:
+   
    npm install framer-motion @emailjs/browser
 
 5. Inicie o servidor de desenvolvimento:
+   
    npm run dev
 
 6. Acesse o link gerado no terminal (geralmente http://localhost:5173).
