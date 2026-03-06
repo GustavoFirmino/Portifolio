@@ -20,7 +20,7 @@ const listaProjetos = [
     tecnologias: ["React", "TypeScript", "Tailwind CSS", "Framer Motion"],
     github: "https://github.com/GustavoFirmino/Portifolio",
     
-    imagem: "/portifolio.gif" 
+    imagem: "/portifolio-ezgif.com-video-to-gif-converter.gif" 
   },
   {
     id: 2,
@@ -32,7 +32,7 @@ const listaProjetos = [
     },
     tecnologias: ["Node.js", "Express", "Prisma ORM", "SQLite", "React"],
     github: "https://github.com/GustavoFirmino/ecommerce-technical-challenge",
-    imagem: "/portifolio-ezgif.com-video-to-gif-converter.gif"
+    imagem: "/projeto-estoque.gif"
   }
 ];
 
