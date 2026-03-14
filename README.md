@@ -36,17 +36,36 @@ Abaixo está a evolução do projeto, desde os wireframes iniciais (Sprint 01) a
 
 ## 📂 Estrutura de Diretórios
 ```text
-/
-├── public/             # Imagens reais dos artefatos e Currículo em PDF
-├── src/                
-│   ├── pages/          # Componentes principais (SobreMim, Projetos, Experiencias, Contato)
-│   ├── App.tsx         # Componente raiz, controle da capa e sistema de páginas duplas
-│   ├── dicionario.ts   # Dicionário global de Internacionalização (i18n) PT/EN
-│   ├── main.tsx        # Ponto de entrada do React
-│   └── index.css       # Injeção do Tailwind e estilos globais customizados
-├── package.json        # Mapeamento de dependências e scripts
-├── tailwind.config.js  # Regras de design, fontes medievais e responsividade
-└── vite.config.ts      # Configurações do Vite
+Portifolio/
+├── public/                 # Arquivos públicos estáticos (Não processados pelo Vite)
+│   ├── projeto-portfolio.png  # Artefato 1
+│   ├── projeto-estoque.gif    # Artefato 2 animado
+│   └── curriculo.pdf          # Seu CV para download
+│
+├── src/                    # O "Coração" da aplicação (Código-fonte)
+│   ├── pages/              # Componentes isolados de cada capítulo do livro
+│   │   ├── SobreMim.tsx       # Lógica e layout da aba "Sobre Mim"
+│   │   ├── Projetos.tsx       # Componente com paginação e imagens dos artefatos
+│   │   ├── Experiencias.tsx   # Paginação matemática inteligente das vivências
+│   │   └── Contato.tsx        # Formulário integrado com EmailJS
+│   │
+│   ├── App.tsx             # Componente Raiz: Gerencia o estado da capa e renderiza as páginas
+│   ├── dicionario.ts       # Motor de Internacionalização (Traduções PT/EN)
+│   ├── index.css           # Injeção do Tailwind e customizações globais de CSS
+│   ├── main.tsx            # Ponto de entrada do React (Injeta o App no HTML)
+│   └── vite-env.d.ts       # Declaração de tipagens do ambiente Vite
+│
+├── docs/                   # Documentação auxiliar para o GitHub
+│   ├── wireframe-capa.png
+│   └── wireframe-livro-aberto.png
+│
+├── .gitignore              # Impede que o 'node_modules' e a pasta 'dist' subam pro GitHub
+├── index.html              # O esqueleto HTML único (Single Page Application)
+├── package.json            # Lista de dependências (React, Framer Motion, EmailJS, etc.)
+├── package-lock.json       # Árvore de versões exatas das bibliotecas
+├── tailwind.config.js      # Configuração visual (Cores de pergaminho, fontes medievais)
+├── tsconfig.json           # Regras rigorosas do compilador TypeScript
+└── vite.config.ts          # Configurações do motor de build (Vite)
 
 ```
 
