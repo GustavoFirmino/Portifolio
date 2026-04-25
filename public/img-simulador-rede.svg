@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="320" viewBox="0 0 600 320">
+  <rect width="600" height="320" fill="#0a0f1c"/>
+  <rect x="1" y="1" width="598" height="318" fill="none" stroke="#c8920f" stroke-width="1.5" opacity="0.5"/>
+  <rect x="12" y="12" width="576" height="296" fill="none" stroke="#c8920f" stroke-width="0.5" opacity="0.25"/>
+  <circle cx="300" cy="110" r="18" fill="#1a2540" stroke="#6e9fd4" stroke-width="1.5"/>
+  <circle cx="180" cy="155" r="14" fill="#1a2540" stroke="#6e9fd4" stroke-width="1.5"/>
+  <circle cx="420" cy="155" r="14" fill="#1a2540" stroke="#6e9fd4" stroke-width="1.5"/>
+  <circle cx="130" cy="80" r="10" fill="#1a2540" stroke="#6e9fd4" stroke-width="1"/>
+  <circle cx="470" cy="80" r="10" fill="#1a2540" stroke="#6e9fd4" stroke-width="1"/>
+  <line x1="300" y1="110" x2="180" y2="155" stroke="#6e9fd4" stroke-width="1.2" opacity="0.7"/>
+  <line x1="300" y1="110" x2="420" y2="155" stroke="#6e9fd4" stroke-width="1.2" opacity="0.7"/>
+  <line x1="180" y1="155" x2="130" y2="80" stroke="#6e9fd4" stroke-width="1" opacity="0.5"/>
+  <line x1="420" y1="155" x2="470" y2="80" stroke="#6e9fd4" stroke-width="1" opacity="0.5"/>
+  <text x="300" y="215" font-family="Georgia, serif" font-size="17" fill="#e8d08a" text-anchor="middle" letter-spacing="2">SIMULADOR DE REDE TCP/IP</text>
+  <line x1="160" y1="228" x2="440" y2="228" stroke="#c8920f" stroke-width="0.8" opacity="0.5"/>
+  <text x="300" y="252" font-family="Georgia, serif" font-size="11" fill="#8b6914" text-anchor="middle" letter-spacing="1">JavaScript · Node.js</text>
+</svg>

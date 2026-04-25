@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import emailjs from '@emailjs/browser';
+import { motion } from 'framer-motion';
 import { dicionario } from '../dicionario';
 
 interface ContatoProps {
@@ -12,81 +13,211 @@ export function Contato({ voltar, idioma, toggleIdioma }: ContatoProps) {
   const [formData, setFormData] = useState({ nome: '', email: '', mensagem: '' });
   const [enviado, setEnviado] = useState(false);
   const [carregando, setCarregando] = useState(false);
-
-  // Puxamos as traduções
   const t = dicionario[idioma];
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); 
+    e.preventDefault();
     setCarregando(true);
-    const templateParams = { nome: formData.nome, email: formData.email, mensagem: formData.mensagem };
+    emailjs
+      .send('service_qb3jail', 'template_sp9e5tu', formData, 'glAb3wFpmONFLHLAL')
+      .then(() => {
+        setEnviado(true);
+        setCarregando(false);
+        setFormData({ nome: '', email: '', mensagem: '' });
+        setTimeout(() => setEnviado(false), 4000);
+      })
+      .catch(() => {
+        setCarregando(false);
+        alert(t.contato.erroMagia);
+      });
+  };
 
-    emailjs.send('service_qb3jail', 'template_sp9e5tu', templateParams, 'glAb3wFpmONFLHLAL')
-    .then(() => {
-      setEnviado(true); setCarregando(false); setFormData({ nome: '', email: '', mensagem: '' });
-      setTimeout(() => setEnviado(false), 4000);
-    }).catch(() => { setCarregando(false); alert(t.contato.erroMagia); });
+  const inputStyle = {
+    width: '100%', padding: '8px 10px',
+    background: 'rgba(232,208,160,0.3)',
+    border: '1.5px solid rgba(28,16,8,0.3)',
+    fontFamily: '"IM Fell English", serif',
+    fontSize: '0.95rem', color: '#1c1008',
+    outline: 'none',
+    transition: 'border-color 0.2s ease',
   };
 
   return (
     <div className="flex w-full h-full">
-      {/* ===== PÁGINA ESQUERDA ===== */}
-      <div className="w-full md:w-1/2 border-b-2 md:border-b-0 md:border-r-[1px] border-[#2c1e16]/20 p-8 md:p-12 flex flex-col relative">
-        <button onClick={voltar} className="self-start text-lg font-bold hover:text-[#7a0000] hover:-translate-x-2 transition-transform cursor-pointer mb-8 flex items-center gap-2">
-          {t.geral.voltarSumario}
-        </button>
+      {/* ── Página esquerda ── */}
+      <div className="w-1/2 border-r border-ink/15 p-7 md:p-10 flex flex-col relative">
+        <motion.button
+          onClick={voltar}
+          whileHover={{ x: -4 }}
+          className="self-start flex items-center gap-2 font-cinzel text-xs tracking-widest uppercase text-ink/60 hover:text-rubric transition-colors cursor-pointer mb-5"
+          style={{ fontFamily: '"Cinzel", serif' }}
+        >
+          ← {t.geral.voltarSumario.replace('← ', '')}
+        </motion.button>
 
-        {/* CABEÇALHO RESOLVIDO: Título e Botão lado a lado */}
-        <div className="flex justify-between items-start mb-6 gap-4 border-b-2 border-[#5c1616] pb-2">
-          <h2 className="text-4xl font-medieval font-bold text-[#2c1e16] leading-none">
+        {/* Cabeçalho */}
+        <div className="flex items-start justify-between mb-4 gap-2">
+          <h2
+            className="text-2xl font-bold text-ink leading-tight"
+            style={{ fontFamily: '"Cinzel Decorative", cursive' }}
+          >
             {t.contato.titulo}
           </h2>
-          <button onClick={toggleIdioma} className="px-3 py-1 border border-[#2c1e16] hover:bg-[#2c1e16] hover:text-[#f4e8d1] transition-all text-sm font-bold cursor-pointer rounded-sm shrink-0 mt-1">
-            {t.geral.botaoIdioma}
+          <button
+            onClick={toggleIdioma}
+            className="px-2 py-1 border border-ink/30 hover:border-gold hover:text-gold font-cinzel text-xs tracking-widest uppercase transition-all cursor-pointer shrink-0 mt-1"
+            style={{ fontFamily: '"Cinzel", serif', color: '#1c1008' }}
+          >
+            {idioma === 'pt' ? 'EN 🇬🇧' : 'PT 🇧🇷'}
           </button>
         </div>
+        <div className="gold-divider mb-4" />
 
-        <p className="text-lg mb-8 text-justify">{t.contato.descricao}</p>
+        <p
+          className="text-sm md:text-base leading-relaxed text-justify text-ink/80 mb-5"
+          style={{ fontFamily: '"IM Fell English", serif' }}
+        >
+          {t.contato.descricao}
+        </p>
 
-        <div className="flex flex-col gap-4 mb-10 text-lg font-medium">
-          <a href="mailto:gustavopessoa00719@gmail.com" className="flex items-center gap-3 hover:text-[#5c1616] hover:translate-x-1 transition-all"><span>🦅</span> gustavopessoa00719@gmail.com</a>
-          <a href="https://wa.me/5531985559698" target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-[#5c1616] hover:translate-x-1 transition-all"><span>💬</span> WhatsApp: (31) 98555-9698</a>
-          <a href="https://linkedin.com/in/SEU-LINKEDIN" target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-[#5c1616] hover:translate-x-1 transition-all"><span>📜</span> {t.contato.linkedin}</a>
-          <a href="https://github.com/GustavoFirmino" target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-[#5c1616] hover:translate-x-1 transition-all"><span>🐙</span> {t.contato.github}</a>
+        {/* Links de contato */}
+        <div className="flex flex-col gap-3 mb-6 text-sm">
+          {[
+            { href: 'mailto:gustavopessoa00719@gmail.com', emoji: '🦅', label: 'gustavopessoa00719@gmail.com' },
+            { href: 'https://wa.me/5531985559698', emoji: '💬', label: 'WhatsApp: (31) 98555-9698' },
+            { href: 'https://www.linkedin.com/in/gustavo-pessoa-205759239/', emoji: '📜', label: t.contato.linkedin },
+            { href: 'https://github.com/GustavoFirmino', emoji: '🐙', label: t.contato.github },
+          ].map(({ href, emoji, label }) => (
+            <motion.a
+              key={href}
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              whileHover={{ x: 5, color: '#8b0000' }}
+              className="flex items-center gap-2 text-ink/80 transition-colors"
+              style={{ fontFamily: '"IM Fell English", serif' }}
+            >
+              <span>{emoji}</span>
+              <span className="hover:underline">{label}</span>
+            </motion.a>
+          ))}
         </div>
 
-        <h3 className="text-2xl font-bold mb-4 border-t border-[#2c1e16]/20 pt-6 text-[#5c1616]">{t.contato.baixarArquivos}</h3>
-        <div className="flex flex-col gap-3">
-          <a href="/Curriculo_Gustavo_PT.pdf" download className="px-4 py-2 bg-[#f4e8d1] text-[#2c1e16] text-center font-bold hover:bg-[#e8d5a5] transition-colors border-2 border-[#2c1e16] w-full shadow-sm">
-            {t.contato.curriculo}
-          </a>
+        {/* Download currículo */}
+        <div className="mt-auto border-t border-ink/15 pt-4">
+          <p
+            className="text-xs uppercase tracking-widest text-ink/50 mb-3"
+            style={{ fontFamily: '"Cinzel", serif' }}
+          >
+            {t.contato.baixarArquivos}
+          </p>
+          <div className="flex flex-col gap-2">
+            <motion.a
+              href={idioma === 'pt' ? '/Currículo_Gustavo_PF_2026.pdf' : '/Currículo_Gustavo_EN_2026.pdf'}
+              download
+              whileHover={{ backgroundColor: '#1c1008', color: '#f2e4c4' }}
+              className="text-center px-4 py-2 border border-ink text-ink text-xs font-bold transition-all"
+              style={{ fontFamily: '"Cinzel", serif', letterSpacing: '0.1em' }}
+            >
+              {t.contato.curriculo}
+            </motion.a>
+          </div>
         </div>
       </div>
 
-      {/* ===== PÁGINA DIREITA ===== */}
-      <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col relative justify-center">
-        <h3 className="text-3xl font-medieval font-bold mb-6 text-[#5c1616]">{t.contato.formularioTitulo}</h3>
-        
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 flex-1 justify-center">
+      {/* ── Página direita ── */}
+      <div className="w-1/2 p-7 md:p-10 flex flex-col justify-center relative">
+        <h3
+          className="text-xl font-bold mb-2"
+          style={{ fontFamily: '"Cinzel Decorative", cursive', color: '#8b0000' }}
+        >
+          {t.contato.formularioTitulo}
+        </h3>
+        <div className="gold-divider mb-5" />
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-lg font-bold mb-1 text-[#2c1e16]" htmlFor="nome">{t.contato.labelNome}</label>
-            <input type="text" id="nome" required value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} className="w-full p-3 bg-[#e8d5a5]/30 border-2 border-[#2c1e16] focus:outline-none focus:ring-2 focus:ring-[#5c1616]/50 transition-all font-medium" />
-          </div>
-          
-          <div>
-            <label className="block text-lg font-bold mb-1 text-[#2c1e16]" htmlFor="email">{t.contato.labelEmail}</label>
-            <input type="email" id="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full p-3 bg-[#e8d5a5]/30 border-2 border-[#2c1e16] focus:outline-none focus:ring-2 focus:ring-[#5c1616]/50 transition-all font-medium" />
+            <label
+              className="block text-xs uppercase tracking-widest text-ink/60 mb-1"
+              style={{ fontFamily: '"Cinzel", serif' }}
+            >
+              {t.contato.labelNome}
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.nome}
+              onChange={e => setFormData({ ...formData, nome: e.target.value })}
+              style={inputStyle}
+              onFocus={e => (e.currentTarget.style.borderColor = '#8b0000')}
+              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(28,16,8,0.3)')}
+            />
           </div>
 
           <div>
-            <label className="block text-lg font-bold mb-1 text-[#2c1e16]" htmlFor="mensagem">{t.contato.labelMensagem}</label>
-            <textarea id="mensagem" rows={5} required value={formData.mensagem} onChange={(e) => setFormData({...formData, mensagem: e.target.value})} className="w-full p-3 bg-[#e8d5a5]/30 border-2 border-[#2c1e16] focus:outline-none focus:ring-2 focus:ring-[#5c1616]/50 resize-none transition-all font-medium"></textarea>
+            <label
+              className="block text-xs uppercase tracking-widest text-ink/60 mb-1"
+              style={{ fontFamily: '"Cinzel", serif' }}
+            >
+              {t.contato.labelEmail}
+            </label>
+            <input
+              type="email"
+              required
+              value={formData.email}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
+              style={inputStyle}
+              onFocus={e => (e.currentTarget.style.borderColor = '#8b0000')}
+              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(28,16,8,0.3)')}
+            />
           </div>
 
-          <button type="submit" disabled={carregando} className={`mt-4 px-6 py-4 font-bold text-lg transition-all border-2 border-[#2c1e16] shadow-lg ${ carregando ? 'bg-[#2c1e16]/50 text-[#f4e8d1] cursor-wait' : 'bg-[#2c1e16] text-[#f4e8d1] hover:bg-[#5c1616] cursor-pointer' }`}>
-            {carregando ? t.contato.btnEnviando : enviado ? t.contato.btnEnviado : t.contato.btnEnviar}
-          </button>
+          <div>
+            <label
+              className="block text-xs uppercase tracking-widest text-ink/60 mb-1"
+              style={{ fontFamily: '"Cinzel", serif' }}
+            >
+              {t.contato.labelMensagem}
+            </label>
+            <textarea
+              rows={4}
+              required
+              value={formData.mensagem}
+              onChange={e => setFormData({ ...formData, mensagem: e.target.value })}
+              style={{ ...inputStyle, resize: 'none' }}
+              onFocus={e => (e.currentTarget.style.borderColor = '#8b0000')}
+              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(28,16,8,0.3)')}
+            />
+          </div>
+
+          <motion.button
+            type="submit"
+            disabled={carregando}
+            whileHover={!carregando ? { backgroundColor: '#8b0000', color: '#f2e4c4' } : {}}
+            whileTap={!carregando ? { scale: 0.98 } : {}}
+            className="px-6 py-3 border-2 border-ink text-ink font-bold transition-all mt-1"
+            style={{
+              fontFamily: '"Cinzel", serif',
+              fontSize: '0.78rem',
+              letterSpacing: '0.1em',
+              cursor: carregando ? 'wait' : 'pointer',
+              opacity: carregando ? 0.65 : 1,
+            }}
+          >
+            {carregando
+              ? t.contato.btnEnviando
+              : enviado
+              ? t.contato.btnEnviado
+              : t.contato.btnEnviar}
+          </motion.button>
         </form>
+
+        <div
+          className="absolute bottom-5 right-8 text-sm text-ink/25"
+          style={{ fontFamily: '"Cinzel Decorative", cursive' }}
+        >
+          — 4 —
+        </div>
       </div>
     </div>
   );

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Currículo — Gustavo Pessoa Firmino Duarte</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --dark:    #0f172a;
+    --mid:     #1e293b;
+    --accent:  #6366f1;
+    --accent2: #818cf8;
+    --light:   #f8fafc;
+    --muted:   #94a3b8;
+    --text:    #1e293b;
+    --border:  #e2e8f0;
+  }
+
+  html, body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #fff;
+    color: var(--text);
+    font-size: 9.5pt;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── PAGE ── */
+  .page {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 68mm 1fr;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    grid-column: 1 / -1;
+    background: var(--dark);
+    color: #fff;
+    padding: 20px 28px 18px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .header-photo {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 2.5px solid var(--accent2);
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .header-info { flex: 1; }
+
+  .header-name {
+    font-size: 22pt;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .header-title {
+    font-size: 9.5pt;
+    font-weight: 400;
+    color: var(--accent2);
+    margin-top: 3px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+
+  .header-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-top: 10px;
+  }
+
+  .header-links a {
+    color: #cbd5e1;
+    font-size: 8.5pt;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.15s;
+  }
+
+  .header-links a:hover { color: #fff; text-decoration: none; }
+
+  .header-links svg { flex-shrink: 0; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--mid);
+    color: #e2e8f0;
+    padding: 20px 18px;
+    overflow: hidden;
+  }
+
+  .sidebar-section { margin-bottom: 16px; }
+
+  .sidebar-title {
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    border-bottom: 1px solid #334155;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 7px;
+    font-size: 8.5pt;
+    color: #cbd5e1;
+  }
+
+  .contact-item svg { margin-top: 1px; flex-shrink: 0; }
+
+  .skill-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .skill-item { font-size: 8.5pt; color: #cbd5e1; }
+
+  .skill-bar {
+    height: 3px;
+    background: #334155;
+    border-radius: 2px;
+    margin-top: 3px;
+    overflow: hidden;
+  }
+
+  .skill-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+  }
+
+  .lang-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 8.5pt;
+  }
+
+  .lang-level {
+    font-size: 7.5pt;
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    padding: 20px 26px;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .section { margin-bottom: 16px; }
+
+  .section-title {
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-bottom: 1.5px solid var(--border);
+    padding-bottom: 5px;
+    margin-bottom: 12px;
+  }
+
+  /* summary */
+  .summary {
+    font-size: 9pt;
+    color: #475569;
+    line-height: 1.6;
+  }
+
+  /* experience */
+  .exp-item { margin-bottom: 11px; }
+  .exp-item:last-child { margin-bottom: 0; }
+
+  .exp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .exp-company {
+    font-weight: 700;
+    font-size: 9.5pt;
+    color: var(--dark);
+  }
+
+  .exp-period {
+    font-size: 7.5pt;
+    color: var(--muted);
+    white-space: nowrap;
+    font-weight: 500;
+    margin-top: 1px;
+  }
+
+  .exp-role {
+    font-size: 8.5pt;
+    color: var(--accent);
+    font-weight: 600;
+    margin-top: 1px;
+  }
+
+  .exp-bullets {
+    margin-top: 5px;
+    padding-left: 14px;
+    list-style: none;
+  }
+
+  .exp-bullets li {
+    position: relative;
+    font-size: 8.5pt;
+    color: #475569;
+    line-height: 1.5;
+    margin-bottom: 2px;
+  }
+
+  .exp-bullets li::before {
+    content: '▸';
+    position: absolute;
+    left: -12px;
+    color: var(--accent2);
+    font-size: 8pt;
+  }
+
+  /* education */
+  .edu-item { margin-bottom: 12px; }
+  .edu-item:last-child { margin-bottom: 0; }
+
+  .edu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .edu-degree { font-weight: 700; font-size: 9pt; color: var(--dark); }
+  .edu-institution { font-size: 8.5pt; color: #475569; margin-top: 1px; }
+  .edu-period { font-size: 7.5pt; color: var(--muted); white-space: nowrap; margin-top: 1px; }
+
+  /* projects */
+  .project-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .project-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    transition: border-color 0.15s;
+  }
+
+  .project-card:hover { border-color: var(--accent2); }
+
+  .project-name {
+    font-weight: 700;
+    font-size: 8.5pt;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .project-name a { color: var(--accent); }
+
+  .project-desc {
+    font-size: 8pt;
+    color: #64748b;
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  .project-tags {
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .tag {
+    font-size: 7pt;
+    font-weight: 600;
+    background: #ede9fe;
+    color: #5b21b6;
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.2px;
+  }
+
+  /* badge */
+  .badge-current {
+    display: inline-block;
+    font-size: 6.5pt;
+    font-weight: 700;
+    background: #dcfce7;
+    color: #15803d;
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  @page {
+    size: 210mm 297mm;
+    margin: 0;
+  }
+
+  @media print {
+    html, body {
+      width: 210mm;
+      height: 297mm;
+      overflow: hidden;
+    }
+    .page { margin: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-info">
+      <div class="header-name">Gustavo Pessoa Firmino Duarte</div>
+      <div class="header-title">Desenvolvedor de Software Júnior</div>
+      <div class="header-links">
+        <a href="mailto:gustavopessoa00719@gmail.com">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          gustavopessoa00719@gmail.com
+        </a>
+        <a href="tel:+5531985559698">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12 19.79 19.79 0 0 1 1.08 3.4 2 2 0 0 1 3.06 1.2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+          (31) 98555-9698
+        </a>
+        <a href="https://linkedin.com/in/gustavo-pessoa-205759239/" target="_blank">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          linkedin.com/in/gustavo-pessoa-205759239
+        </a>
+        <a href="https://github.com/GustavoFirmino" target="_blank">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          github.com/GustavoFirmino
+        </a>
+        <a href="https://portifolio-rho-beige-65.vercel.app/" target="_blank">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          portifolio-rho-beige-65.vercel.app
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Habilidades</div>
+      <div class="skill-list">
+        <div class="skill-item">
+          React / TypeScript
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:88%"></div></div>
+        </div>
+        <div class="skill-item">
+          Java + Spring Boot
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:82%"></div></div>
+        </div>
+        <div class="skill-item">
+          Node.js / JavaScript
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:80%"></div></div>
+        </div>
+        <div class="skill-item">
+          SQL / Banco de Dados
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:72%"></div></div>
+        </div>
+        <div class="skill-item">
+          Docker / Git
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:70%"></div></div>
+        </div>
+        <div class="skill-item">
+          Python
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:60%"></div></div>
+        </div>
+        <div class="skill-item">
+          Swift (iOS)
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:50%"></div></div>
+        </div>
+        <div class="skill-item">
+          SAP-IBP
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:45%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Idiomas</div>
+      <div class="lang-item">
+        <span>Inglês</span>
+        <span class="lang-level">Fluente</span>
+      </div>
+      <div class="lang-item">
+        <span>Espanhol</span>
+        <span class="lang-level">Intermediário</span>
+      </div>
+      <div class="lang-item">
+        <span>Português</span>
+        <span class="lang-level">Nativo</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Formação</div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:8.5pt;font-weight:600;color:#e2e8f0">Eng. de Software</div>
+        <div style="font-size:8pt;color:#94a3b8;margin-top:2px">PUC Minas</div>
+        <div style="font-size:7.5pt;color:#64748b;margin-top:2px">Fev/2024 — Jun/2028</div>
+      </div>
+      <div>
+        <div style="font-size:8.5pt;font-weight:600;color:#e2e8f0">Ciência da Computação</div>
+        <div style="font-size:8pt;color:#94a3b8;margin-top:2px">PUC Minas</div>
+        <div style="font-size:7.5pt;color:#64748b;margin-top:2px">Jul/2022 — Dez/2023</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Contato</div>
+      <div class="contact-item">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Nova Lima, MG — Brasil
+      </div>
+      <div class="contact-item">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12 19.79 19.79 0 0 1 1.08 3.4 2 2 0 0 1 3.06 1.2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+        <a href="tel:+5531985559698">(31) 98555-9698</a>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="section">
+      <div class="section-title">Perfil</div>
+      <p class="summary">
+        Desenvolvedor de software com experiência em ambientes corporativos de alta complexidade e setor público.
+        Atualmente desenvolvendo produtos fullstack no <strong>Grupo ROI</strong>, com histórico em suporte
+        internacional de aplicações na <strong>ArcelorMittal</strong>. Graduando em Engenharia de Software pela
+        PUC Minas, com forte base em arquitetura limpa, boas práticas e entrega contínua.
+        Inglês fluente com uso diário em contexto profissional.
+      </p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Experiência Profissional</div>
+
+      <div class="exp-item">
+        <div class="exp-header">
+          <div>
+            <div class="exp-company">
+              Grupo ROI
+              <span class="badge-current">Atual</span>
+            </div>
+            <div class="exp-role">Desenvolvedor de Software Júnior — Loot &amp; ROI Club</div>
+          </div>
+          <div class="exp-period">Mar/2026 — Presente</div>
+        </div>
+        <ul class="exp-bullets">
+          <li>Desenvolvimento e manutenção fullstack dos produtos <strong>Loot</strong> e <strong>ROI Club</strong>.</li>
+          <li>Implementação de novas funcionalidades, correção de bugs e revisão de código.</li>
+          <li>Colaboração em ambiente ágil com foco em qualidade e entrega contínua.</li>
+        </ul>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-header">
+          <div>
+            <div class="exp-company">ArcelorMittal Sistemas</div>
+            <div class="exp-role">Estagiário em Suporte Internacional de Aplicações</div>
+          </div>
+          <div class="exp-period">Fev/2024 — Fev/2026</div>
+        </div>
+        <ul class="exp-bullets">
+          <li>Suporte internacional de aplicações com comunicação direta com clientes em inglês e espanhol.</li>
+          <li>Análise de incidentes, validação de sistemas e documentação técnica.</li>
+          <li>Operação e suporte a processos no ecossistema <strong>SAP-IBP</strong>.</li>
+        </ul>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-header">
+          <div>
+            <div class="exp-company">Câmara Municipal de Nova Lima</div>
+            <div class="exp-role">Estagiário em TI</div>
+          </div>
+          <div class="exp-period">Jul/2023 — Jan/2024</div>
+        </div>
+        <ul class="exp-bullets">
+          <li>Suporte administrativo e técnico durante a graduação em Ciência da Computação.</li>
+          <li>Apoio a processos internos, gestão de documentação e suporte a usuários.</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="section">
+      <div class="section-title">Projetos em Destaque</div>
+      <div class="project-grid">
+
+        <div class="project-card">
+          <div class="project-name">
+            🏰 <a href="https://portifolio-rho-beige-65.vercel.app/" target="_blank">Portfólio Profissional</a>
+          </div>
+          <div class="project-desc">
+            Portfólio interativo com temática medieval, animações 3D, internacionalização PT/EN e ambient sound via Web Audio API.
+          </div>
+          <div class="project-tags">
+            <span class="tag">React</span>
+            <span class="tag">TypeScript</span>
+            <span class="tag">Tailwind</span>
+            <span class="tag">Framer Motion</span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-name">
+            💰 <a href="https://github.com/GustavoFirmino/sistema-moeda-estudantil" target="_blank">Sistema Moeda Estudantil</a>
+          </div>
+          <div class="project-desc">
+            Plataforma com Java 21 + Spring Boot 3 para gestão de moedas virtuais entre instituições, professores, alunos e empresas parceiras.
+          </div>
+          <div class="project-tags">
+            <span class="tag">Java 21</span>
+            <span class="tag">Spring Boot 3</span>
+            <span class="tag">Docker</span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-name">
+            🌐 <a href="https://github.com/GustavoFirmino/simulador-de-rede" target="_blank">Simulador de Rede TCP/IP</a>
+          </div>
+          <div class="project-desc">
+            Simuladores interativos para compreensão da pilha TCP/IP ponta a ponta, cobrindo cada camada do modelo.
+          </div>
+          <div class="project-tags">
+            <span class="tag">JavaScript</span>
+            <span class="tag">Node.js</span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-name">
+            🍎 <a href="https://github.com/GustavoFirmino/Projetos-Switft-HackaTRuck" target="_blank">Swift — HackaTruck / IBM</a>
+          </div>
+          <div class="project-desc">
+            Projetos iOS desenvolvidos no programa de capacitação Hack a Truck, iniciativa da IBM para formação em desenvolvimento mobile.
+          </div>
+          <div class="project-tags">
+            <span class="tag">Swift</span>
+            <span class="tag">iOS</span>
+            <span class="tag">Xcode</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

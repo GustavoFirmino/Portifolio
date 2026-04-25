@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="320" viewBox="0 0 600 320">
+  <rect width="600" height="320" fill="#1a0a0f"/>
+  <rect x="1" y="1" width="598" height="318" fill="none" stroke="#c8920f" stroke-width="1.5" opacity="0.5"/>
+  <rect x="12" y="12" width="576" height="296" fill="none" stroke="#c8920f" stroke-width="0.5" opacity="0.25"/>
+  <rect x="248" y="68" width="104" height="124" rx="16" fill="#2a1520" stroke="#c8920f" stroke-width="1.5" opacity="0.9"/>
+  <rect x="260" y="80" width="80" height="88" rx="4" fill="#0a0008"/>
+  <circle cx="300" cy="200" r="6" fill="none" stroke="#c8920f" stroke-width="1.5" opacity="0.8"/>
+  <text x="300" y="126" font-family="Georgia, serif" font-size="28" text-anchor="middle">🍎</text>
+  <text x="300" y="218" font-family="Georgia, serif" font-size="17" fill="#e8d08a" text-anchor="middle" letter-spacing="2">PROJETOS SWIFT — HACKATRUCK</text>
+  <line x1="140" y1="232" x2="460" y2="232" stroke="#c8920f" stroke-width="0.8" opacity="0.5"/>
+  <text x="300" y="256" font-family="Georgia, serif" font-size="11" fill="#8b6914" text-anchor="middle" letter-spacing="1">Swift · iOS · Xcode · IBM</text>
+</svg>

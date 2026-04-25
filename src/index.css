@@ -2,7 +2,144 @@
 @tailwind components;
 @tailwind utilities;
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
-  background-color: #f4e4bc; /* Fundo padrão pergaminho */
-  color: #2c1e16; /* Texto cor de tinta */
+  background-color: #050302;
+  color: #1c1008;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── 3D Book ─── */
+.book-perspective {
+  perspective: 2400px;
+  perspective-origin: 50% 45%;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ─── Page flip layer ─── */
+.page-flip-layer {
+  position: absolute;
+  top: 0; bottom: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+  z-index: 40;
+}
+
+/* ─── Custom scrollbar (pergaminho) ─── */
+.scrollbar-parchment {
+  scrollbar-width: thin;
+  scrollbar-color: #8b0000 #e8d0a0;
+}
+.scrollbar-parchment::-webkit-scrollbar { width: 5px; }
+.scrollbar-parchment::-webkit-scrollbar-track { background: #e8d0a0; }
+.scrollbar-parchment::-webkit-scrollbar-thumb {
+  background: #8b0000;
+  border-radius: 2px;
+}
+
+/* ─── Ornamento de capítulo ─── */
+.chapter-ornament::before,
+.chapter-ornament::after {
+  content: '◆';
+  color: #c8920f;
+  font-size: 0.6rem;
+  vertical-align: middle;
+  margin: 0 8px;
+  opacity: 0.7;
+}
+
+/* ─── Drop cap ─── */
+.drop-cap::first-letter {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 5rem;
+  font-weight: 700;
+  color: #8b0000;
+  float: left;
+  line-height: 0.75;
+  margin-right: 8px;
+  margin-top: 4px;
+}
+
+/* ─── Dust particles ─── */
+@keyframes drift {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 0.35; }
+  90%  { opacity: 0.15; }
+  100% { transform: translateY(-110px) translateX(14px); opacity: 0; }
+}
+
+.dust-particle {
+  position: absolute;
+  border-radius: 50%;
+  animation: drift linear infinite;
+}
+
+/* ─── Sparks / embers (faster, more orange, drift up-left from torch) ─── */
+@keyframes spark {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+  8%   { opacity: 0.85; }
+  70%  { opacity: 0.4; }
+  100% { transform: translateY(-220px) translateX(var(--sx, 18px)) scale(0.2); opacity: 0; }
+}
+
+.spark-particle {
+  position: absolute;
+  border-radius: 50%;
+  animation: spark ease-out infinite;
+}
+
+/* ─── Book page texture overlay ─── */
+.page-texture {
+  background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+  background-color: #f2e4c4;
+}
+
+.leather-texture {
+  background-image: url('https://www.transparenttextures.com/patterns/leather.png');
+  background-blend-mode: multiply;
+}
+
+/* ─── Gold divider ─── */
+.gold-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #c8920f 30%, #c8920f 70%, transparent);
+  opacity: 0.6;
+  margin: 12px 0;
+}
+
+/* ─── Dungeon stone wall ─── */
+.dungeon-wall {
+  background-color: #110b06;
+  background-image:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0px, transparent 54px,
+      rgba(0,0,0,0.55) 54px, rgba(0,0,0,0.55) 58px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 84px,
+      rgba(0,0,0,0.35) 84px, rgba(0,0,0,0.35) 88px
+    ),
+    repeating-linear-gradient(
+      135deg,
+      rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 30px,
+      transparent 30px, transparent 60px
+    );
 }

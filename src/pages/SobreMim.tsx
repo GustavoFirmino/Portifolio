@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { dicionario } from '../dicionario';
 
 interface SobreMimProps {
@@ -11,36 +12,110 @@ export function SobreMim({ voltar, idioma, toggleIdioma }: SobreMimProps) {
 
   return (
     <div className="flex w-full h-full">
-      <div className="w-full md:w-1/2 border-b-2 md:border-b-0 md:border-r-[1px] border-[#2c1e16]/20 p-8 md:p-12 flex flex-col relative">
-        <button onClick={voltar} className="self-start text-lg font-bold hover:text-[#7a0000] hover:-translate-x-2 transition-transform cursor-pointer mb-8 flex items-center gap-2">
-          {t.geral.voltarSumario}
-        </button>
+      {/* ── Página esquerda ── */}
+      <div
+        className="w-1/2 border-r border-ink/15 p-7 md:p-10 flex flex-col relative overflow-hidden"
+        style={{ fontFamily: '"IM Fell English", serif' }}
+      >
+        {/* Botão voltar */}
+        <motion.button
+          onClick={voltar}
+          whileHover={{ x: -4 }}
+          className="self-start flex items-center gap-2 font-cinzel text-xs tracking-widest uppercase text-ink/60 hover:text-rubric transition-colors cursor-pointer mb-6"
+          style={{ fontFamily: '"Cinzel", serif' }}
+        >
+          ← {t.geral.voltarSumario.replace('← ', '')}
+        </motion.button>
 
-        <div className="flex justify-between items-start mb-6 gap-4 border-b-2 border-[#5c1616] pb-2">
-          <h2 className="text-4xl font-medieval font-bold text-[#2c1e16] leading-none">
+        {/* Título do capítulo */}
+        <div className="mb-5">
+          <h2
+            className="text-2xl md:text-3xl font-bold text-ink leading-tight"
+            style={{ fontFamily: '"Cinzel Decorative", cursive' }}
+          >
             {t.sobreMim.titulo}
           </h2>
+          <div className="gold-divider mt-2" />
         </div>
 
-        <div className="text-xl leading-relaxed text-justify flex-1">
-          <p className="first-letter:text-7xl first-letter:font-medieval first-letter:font-bold first-letter:text-[#7a0000] first-letter:float-left first-letter:mr-3 first-letter:mt-[-8px] first-letter:leading-none">
-            {t.sobreMim.p1_1}<strong>Gustavo Firmino</strong>{t.sobreMim.p1_2}<strong>React</strong>{t.sobreMim.p1_3}
+        {/* Texto com drop cap */}
+        <div
+          className="drop-cap flex-1 text-lg md:text-xl leading-relaxed text-justify text-ink/90 overflow-y-auto scrollbar-parchment pr-1"
+          style={{ fontFamily: '"IM Fell English", serif' }}
+        >
+          <p>
+            {t.sobreMim.p1_1}
+            <strong style={{ fontFamily: '"Cinzel", serif' }}>Gustavo Firmino</strong>
+            {t.sobreMim.p1_2}
+            <strong style={{ color: '#8b0000' }}>React</strong>
+            {t.sobreMim.p1_3}
           </p>
+        </div>
+
+        {/* Ornamento de rodapé */}
+        <div className="mt-4 flex items-center gap-2 opacity-30">
+          <div className="flex-1 h-px bg-ink" />
+          <span className="text-gold text-sm">◆</span>
+          <div className="flex-1 h-px bg-ink" />
         </div>
       </div>
 
-      <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col relative">
-        <div className="flex justify-end mb-6 w-full shrink-0">
-          <button onClick={toggleIdioma} className="px-3 py-1 border border-[#2c1e16] hover:bg-[#2c1e16] hover:text-[#f4e8d1] transition-all text-sm font-bold cursor-pointer rounded-sm">
-            {t.geral.botaoIdioma}
+      {/* ── Página direita ── */}
+      <div
+        className="w-1/2 p-7 md:p-10 flex flex-col relative"
+        style={{ fontFamily: '"IM Fell English", serif' }}
+      >
+        {/* Botão de idioma */}
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={toggleIdioma}
+            className="px-3 py-1 border border-ink/30 hover:border-gold hover:text-gold font-cinzel text-xs tracking-widest uppercase transition-all cursor-pointer"
+            style={{ fontFamily: '"Cinzel", serif', color: '#1c1008' }}
+          >
+            {idioma === 'pt' ? 'EN 🇬🇧' : 'PT 🇧🇷'}
           </button>
         </div>
 
-        <div className="text-xl leading-relaxed space-y-6 text-justify flex-1">
-          <p>{t.sobreMim.p2_1}<strong>Node.js</strong>{t.sobreMim.p2_2}</p>
+        {/* Texto continuação */}
+        <div
+          className="flex-1 text-lg md:text-xl leading-relaxed text-justify text-ink/90 space-y-5 overflow-y-auto scrollbar-parchment pr-1"
+        >
+          <p>
+            {t.sobreMim.p2_1}
+            <strong style={{ color: '#8b0000' }}>Node.js</strong>
+            {t.sobreMim.p2_2}
+          </p>
           <p>{t.sobreMim.p3}</p>
+
+          {/* Bloco de habilidades */}
+          <div className="mt-4 border-t border-ink/15 pt-4">
+            <p
+              className="text-xs tracking-widest uppercase mb-3 opacity-60"
+              style={{ fontFamily: '"Cinzel", serif' }}
+            >
+              Arsenal
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {['React', 'TypeScript', 'Node.js', 'Tailwind', 'Framer Motion', 'Prisma', 'SQL'].map(skill => (
+                <span
+                  key={skill}
+                  className="text-xs px-2 py-1 border border-ink/25 text-ink/80 hover:border-gold hover:text-gold transition-all"
+                  style={{ fontFamily: '"Cinzel", serif' }}
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="absolute bottom-6 right-12 text-[#2c1e16]/50 font-medieval font-bold text-xl">- 1 -</div>
+
+        {/* Número de página */}
+        <div
+          className="absolute bottom-5 right-8 text-sm text-ink/25"
+          style={{ fontFamily: '"Cinzel Decorative", cursive' }}
+        >
+          — 1 —
+        </div>
       </div>
     </div>
   );
