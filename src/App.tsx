@@ -64,10 +64,13 @@ const RIGHT_SPARKS = Array.from({ length: 14 }, (_, i) => ({
   colorG: Math.floor(125 + Math.random() * 85),
 }));
 
-// ─── Dungeon ambience (Web Audio) ───
+// ─── Medieval flute ambience (Web Audio) ───
 function useDungeonAmbience() {
-  const ctxRef = useRef<AudioContext | null>(null);
+  const ctxRef   = useRef<AudioContext | null>(null);
   const masterRef = useRef<GainNode | null>(null);
+  const schedRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const noteIdxRef = useRef(0);
+  const nextTimeRef = useRef(0);
   const [enabled, setEnabled] = useState(false);
 
   const start = useCallback(() => {
@@ -78,64 +81,105 @@ function useDungeonAmbience() {
 
     const master = ctx.createGain();
     master.gain.setValueAtTime(0, ctx.currentTime);
-    // Very gentle volume — enough to set mood without being distracting
-    master.gain.linearRampToValueAtTime(0.055, ctx.currentTime + 4);
+    master.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 2.5);
     master.connect(ctx.destination);
     masterRef.current = master;
 
-    // Soft sine drone — no sawtooth (harsh/buzzy), only smooth sines
-    const layers: { f: number; g: number; lfoR: number }[] = [
-      { f: 55,   g: 0.55, lfoR: 0.07 },  // sub bass
-      { f: 110,  g: 0.30, lfoR: 0.11 },  // octave
-      { f: 82.5, g: 0.18, lfoR: 0.09 },  // fifth — minor mood
-      { f: 165,  g: 0.08, lfoR: 0.17 },  // upper harmonic
-    ];
-    layers.forEach(({ f, g, lfoR }) => {
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = f;
-      const lfo = ctx.createOscillator();
-      lfo.type = 'sine';
-      lfo.frequency.value = lfoR;
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.value = f * 0.003; // subtle vibrato
-      lfo.connect(lfoGain);
-      lfoGain.connect(osc.frequency);
-      const oscGain = ctx.createGain();
-      oscGain.gain.value = g;
-      osc.connect(oscGain);
-      oscGain.connect(master);
-      osc.start();
-      lfo.start();
-    });
+    // White noise buffer for breath texture (reused across all notes)
+    const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
 
-    // Very faint brown noise — dungeon air
-    const bufSize = ctx.sampleRate * 4;
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    let b0 = 0;
-    for (let i = 0; i < bufSize; i++) {
-      const w = Math.random() * 2 - 1;
-      b0 = (b0 + 0.02 * w) / 1.02;
-      d[i] = b0 * 3.5;
-    }
-    const noise = ctx.createBufferSource();
-    noise.buffer = buf;
-    noise.loop = true;
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 220;
-    const noiseGain = ctx.createGain();
-    noiseGain.gain.value = 0.018; // very quiet
-    noise.connect(filter);
-    filter.connect(noiseGain);
-    noiseGain.connect(master);
-    noise.start();
+    // D major pentatonic — bright, lively medieval feel
+    // D4, F#4, A4, B4, D5, F#5, A5
+    const scale = [293.66, 369.99, 440.00, 493.88, 587.33, 739.99, 880.00];
+    // Flowing melody — ascends, wanders, circles back
+    const melody = [0, 1, 2, 3, 2, 4, 3, 2, 1, 3, 2, 1, 0, 2, 1, 0,
+                    2, 3, 4, 3, 5, 4, 3, 2, 4, 3, 2, 1, 0, 1, 2, 1];
+    const step = 0.52; // seconds per note
+
+    const playNote = (freq: number, when: number, dur: number) => {
+      if (!ctxRef.current) return;
+
+      // Flute body — sine + weak 2nd harmonic for warmth
+      const osc1 = ctx.createOscillator();
+      osc1.type = 'sine';
+      osc1.frequency.value = freq;
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.value = freq * 2;
+
+      // Vibrato (starts after short attack)
+      const vib = ctx.createOscillator();
+      vib.type = 'sine';
+      vib.frequency.value = 5.8;
+      const vibGain = ctx.createGain();
+      vibGain.gain.setValueAtTime(0, when);
+      vibGain.gain.linearRampToValueAtTime(freq * 0.009, when + 0.18);
+      vib.connect(vibGain);
+      vibGain.connect(osc1.frequency);
+      vibGain.connect(osc2.frequency);
+
+      // Amplitude envelope
+      const env = ctx.createGain();
+      env.gain.setValueAtTime(0, when);
+      env.gain.linearRampToValueAtTime(0.30, when + 0.07);         // attack
+      env.gain.linearRampToValueAtTime(0.24, when + dur - 0.09);  // sustain
+      env.gain.linearRampToValueAtTime(0, when + dur);             // release
+
+      const osc2env = ctx.createGain();
+      osc2env.gain.value = 0.06;
+
+      osc1.connect(env);
+      osc2.connect(osc2env);
+      osc2env.connect(env);
+      env.connect(master);
+
+      // Breath noise — bandpass around note freq for airy texture
+      const breath = ctx.createBufferSource();
+      breath.buffer = noiseBuf;
+      breath.loop = true;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = freq * 1.4;
+      bp.Q.value = 1.8;
+      const breathEnv = ctx.createGain();
+      breathEnv.gain.setValueAtTime(0, when);
+      breathEnv.gain.linearRampToValueAtTime(0.038, when + 0.04);
+      breathEnv.gain.linearRampToValueAtTime(0.014, when + dur - 0.08);
+      breathEnv.gain.linearRampToValueAtTime(0, when + dur);
+      breath.connect(bp);
+      bp.connect(breathEnv);
+      breathEnv.connect(master);
+
+      const end = when + dur + 0.05;
+      osc1.start(when);   osc1.stop(end);
+      osc2.start(when);   osc2.stop(end);
+      vib.start(when);    vib.stop(end);
+      breath.start(when); breath.stop(end);
+    };
+
+    noteIdxRef.current = 0;
+    nextTimeRef.current = ctx.currentTime + 0.4;
+
+    const schedule = () => {
+      if (!ctxRef.current) return;
+      const lookahead = 0.5;
+      while (nextTimeRef.current < ctx.currentTime + lookahead) {
+        const idx = melody[noteIdxRef.current % melody.length];
+        playNote(scale[idx], nextTimeRef.current, step - 0.05);
+        nextTimeRef.current += step;
+        noteIdxRef.current++;
+      }
+      schedRef.current = setTimeout(schedule, 120);
+    };
+    schedule();
 
     setEnabled(true);
   }, []);
 
   const stop = useCallback(() => {
+    if (schedRef.current) clearTimeout(schedRef.current);
     if (!masterRef.current || !ctxRef.current) return;
     const ctx = ctxRef.current;
     masterRef.current.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
@@ -151,7 +195,10 @@ function useDungeonAmbience() {
     if (enabled) stop(); else start();
   }, [enabled, start, stop]);
 
-  useEffect(() => () => { ctxRef.current?.close(); }, []);
+  useEffect(() => () => {
+    if (schedRef.current) clearTimeout(schedRef.current);
+    ctxRef.current?.close();
+  }, []);
 
   return { enabled, toggle };
 }
