@@ -1,44 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import emailjs from '@emailjs/browser';
 import { motion } from 'framer-motion';
 import { dicionario } from '../dicionario';
-
-function LinkedInBadge() {
-  useEffect(() => {
-    const existing = document.getElementById('li-badge-script');
-    if (existing) existing.remove();
-    const script = document.createElement('script');
-    script.id = 'li-badge-script';
-    script.src = 'https://platform.linkedin.com/badges/js/profile.js';
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
-    return () => {
-      document.getElementById('li-badge-script')?.remove();
-    };
-  }, []);
-
-  return (
-    <div
-      className="badge-base LI-profile-badge"
-      data-locale="pt_BR"
-      data-size="medium"
-      data-theme="light"
-      data-type="HORIZONTAL"
-      data-vanity="gustavo-pessoa-205759239"
-      data-version="v1"
-    >
-      <a
-        className="badge-base__link LI-simple-link"
-        href="https://br.linkedin.com/in/gustavo-pessoa-205759239?trk=profile-badge"
-        target="_blank"
-        rel="noreferrer"
-      >
-        Gustavo Pessoa
-      </a>
-    </div>
-  );
-}
 
 interface ContatoProps {
   voltar: () => void;
@@ -138,11 +101,6 @@ export function Contato({ voltar, idioma, toggleIdioma }: ContatoProps) {
               <span className="hover:underline">{label}</span>
             </motion.a>
           ))}
-        </div>
-
-        {/* LinkedIn Badge */}
-        <div className="mb-5">
-          <LinkedInBadge />
         </div>
 
         {/* Download currículo */}
