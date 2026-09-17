@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation, useMotionValue, useSpring } from 'framer-motion';
 import { SobreMim } from './pages/SobreMim';
 import { Projetos } from './pages/Projetos';
 import { Experiencias } from './pages/Experiencias';
 import { Contato } from './pages/Contato';
 import { dicionario } from './dicionario';
+import { projetos as projetosData, experiencias as experienciasData } from './data/content';
 
 type PageName = 'sumario' | 'sobre_mim' | 'projetos' | 'experiencias' | 'contato';
 type Idioma = 'pt' | 'en';
@@ -12,6 +13,75 @@ type BookState = 'closed' | 'open';
 
 const PAGE_ORDER: PageName[] = ['sumario', 'sobre_mim', 'projetos', 'experiencias', 'contato'];
 const OPEN_EASE = [0.4, 0, 0.2, 1] as const;
+
+// ─── prefers-reduced-motion ───
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(
+    () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const on = () => setReduced(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return reduced;
+}
+
+// ─── viewport breakpoint (single-page book on phones) ───
+function useIsMobile(bp = 768) {
+  const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < bp);
+  useEffect(() => {
+    const on = () => setMobile(window.innerWidth < bp);
+    window.addEventListener('resize', on);
+    return () => window.removeEventListener('resize', on);
+  }, [bp]);
+  return mobile;
+}
+
+// ─── Page-turn SFX: a short parchment rustle (respects the Sound toggle) ───
+let sfxCtx: AudioContext | null = null;
+function playPageTurn() {
+  try {
+    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AC) return;
+    if (!sfxCtx) sfxCtx = new AC();
+    const ctx = sfxCtx;
+    if (ctx.state === 'suspended') void ctx.resume();
+    const now = ctx.currentTime;
+    const dur = 0.42;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) { const t = i / d.length; d[i] = (Math.random() * 2 - 1) * (1 - t) * (1 - t); }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.Q.value = 0.7;
+    bp.frequency.setValueAtTime(900, now);
+    bp.frequency.exponentialRampToValueAtTime(3400, now + dur * 0.65);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.linearRampToValueAtTime(0.16, now + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0004, now + dur);
+    src.connect(bp); bp.connect(g); g.connect(ctx.destination);
+    src.start(now); src.stop(now + dur + 0.02);
+  } catch { /* audio unavailable */ }
+}
+
+// ─── Candlelight glow that follows the cursor (pointer devices only) ───
+function MouseGlow() {
+  const x = useMotionValue(-600);
+  const y = useMotionValue(-600);
+  const sx = useSpring(x, { stiffness: 110, damping: 26, mass: 0.6 });
+  const sy = useSpring(y, { stiffness: 110, damping: 26, mass: 0.6 });
+  useEffect(() => {
+    const on = (e: MouseEvent) => { x.set(e.clientX); y.set(e.clientY); };
+    window.addEventListener('mousemove', on);
+    return () => window.removeEventListener('mousemove', on);
+  }, [x, y]);
+  return <motion.div className="mouse-glow" style={{ x: sx, y: sy }} />;
+}
 
 // ─── Dust particles ───
 const PARTICLES = Array.from({ length: 24 }, (_, i) => ({
@@ -64,12 +134,16 @@ const RIGHT_SPARKS = Array.from({ length: 14 }, (_, i) => ({
   colorG: Math.floor(125 + Math.random() * 85),
 }));
 
-// ─── Medieval flute ambience (Web Audio) ───
+// ─── Grimoire ambience (Web Audio) ───
+// Slow, sparse lute/harp plucks over a low drone, bathed in chamber reverb.
+// Fully procedural (no audio files); a gentle random-walk melody in A minor
+// pentatonic so it never repeats as a tight loop.
 function useDungeonAmbience() {
-  const ctxRef   = useRef<AudioContext | null>(null);
+  const ctxRef    = useRef<AudioContext | null>(null);
   const masterRef = useRef<GainNode | null>(null);
   const schedRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const noteIdxRef = useRef(0);
+  const droneRef  = useRef<AudioNode[]>([]);
+  const stepIdxRef = useRef(3);
   const nextTimeRef = useRef(0);
   const [enabled, setEnabled] = useState(false);
 
@@ -81,97 +155,115 @@ function useDungeonAmbience() {
 
     const master = ctx.createGain();
     master.gain.setValueAtTime(0, ctx.currentTime);
-    master.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 2.5);
+    master.gain.linearRampToValueAtTime(0.30, ctx.currentTime + 3.5);
     master.connect(ctx.destination);
     masterRef.current = master;
 
-    // White noise buffer for breath texture (reused across all notes)
-    const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
-    const nd = noiseBuf.getChannelData(0);
-    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    // ── Chamber reverb (generated impulse response) ──
+    const irLen = ctx.sampleRate * 2.8;
+    const irBuf = ctx.createBuffer(2, irLen, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = irBuf.getChannelData(ch);
+      for (let i = 0; i < irLen; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.4);
+    }
+    const reverb = ctx.createConvolver();
+    reverb.buffer = irBuf;
+    const wet = ctx.createGain(); wet.gain.value = 0.9;
+    const dry = ctx.createGain(); dry.gain.value = 0.62;
+    reverb.connect(wet); wet.connect(master); dry.connect(master);
 
-    // D major pentatonic — bright, lively medieval feel
-    // D4, F#4, A4, B4, D5, F#5, A5
-    const scale = [293.66, 369.99, 440.00, 493.88, 587.33, 739.99, 880.00];
-    // Flowing melody — ascends, wanders, circles back
-    const melody = [0, 1, 2, 3, 2, 4, 3, 2, 1, 3, 2, 1, 0, 2, 1, 0,
-                    2, 3, 4, 3, 5, 4, 3, 2, 4, 3, 2, 1, 0, 1, 2, 1];
-    const step = 0.52; // seconds per note
+    // ── Low drone bed (tonic A) with a slow filter sweep ──
+    const droneFilter = ctx.createBiquadFilter();
+    droneFilter.type = 'lowpass';
+    droneFilter.frequency.value = 520;
+    droneFilter.Q.value = 0.7;
+    const droneGain = ctx.createGain();
+    droneGain.gain.value = 0.09;
+    droneFilter.connect(droneGain); droneGain.connect(dry); droneGain.connect(reverb);
+    const droneNodes: AudioNode[] = [];
+    [55, 82.41, 110].forEach((f, i) => {          // A1, E2, A2
+      const o = ctx.createOscillator();
+      o.type = i === 2 ? 'triangle' : 'sine';
+      o.frequency.value = f;
+      const g = ctx.createGain();
+      g.gain.value = i === 0 ? 0.5 : i === 1 ? 0.28 : 0.18;
+      o.connect(g); g.connect(droneFilter);
+      o.start();
+      droneNodes.push(o, g);
+    });
+    // Breathing movement on the drone's cutoff
+    const lfo = ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 0.05;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 180;
+    lfo.connect(lfoGain); lfoGain.connect(droneFilter.frequency);
+    lfo.start();
+    droneNodes.push(lfo, lfoGain);
+    droneRef.current = droneNodes;
 
-    const playNote = (freq: number, when: number, dur: number) => {
+    // ── A minor pentatonic across three octaves (mysterious, warm) ──
+    // A2 C3 D3 E3 G3 A3 C4 D4 E4 G4 A4 C5 D5 E5
+    const scale = [110.00, 130.81, 146.83, 164.81, 196.00, 220.00,
+                   261.63, 293.66, 329.63, 392.00, 440.00,
+                   523.25, 587.33, 659.25];
+
+    const pluck = (freq: number, when: number, vel: number) => {
       if (!ctxRef.current) return;
-
-      // Flute body — sine + weak 2nd harmonic for warmth
-      const osc1 = ctx.createOscillator();
-      osc1.type = 'sine';
-      osc1.frequency.value = freq;
-      const osc2 = ctx.createOscillator();
+      const dur = 1.6 + Math.random() * 1.4;
+      const osc = ctx.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      const osc2 = ctx.createOscillator();       // soft octave shimmer
       osc2.type = 'sine';
-      osc2.frequency.value = freq * 2;
+      osc2.frequency.value = freq * 2.001;
+      const o2g = ctx.createGain(); o2g.gain.value = 0.11;
 
-      // Vibrato (starts after short attack)
-      const vib = ctx.createOscillator();
-      vib.type = 'sine';
-      vib.frequency.value = 5.8;
-      const vibGain = ctx.createGain();
-      vibGain.gain.setValueAtTime(0, when);
-      vibGain.gain.linearRampToValueAtTime(freq * 0.009, when + 0.18);
-      vib.connect(vibGain);
-      vibGain.connect(osc1.frequency);
-      vibGain.connect(osc2.frequency);
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(2400, when);
+      lp.frequency.exponentialRampToValueAtTime(640, when + dur); // string decay tone
 
-      // Amplitude envelope
       const env = ctx.createGain();
-      env.gain.setValueAtTime(0, when);
-      env.gain.linearRampToValueAtTime(0.30, when + 0.07);         // attack
-      env.gain.linearRampToValueAtTime(0.24, when + dur - 0.09);  // sustain
-      env.gain.linearRampToValueAtTime(0, when + dur);             // release
+      env.gain.setValueAtTime(0.0001, when);
+      env.gain.linearRampToValueAtTime(vel, when + 0.012);        // pluck attack
+      env.gain.exponentialRampToValueAtTime(0.0006, when + dur);  // long natural decay
 
-      const osc2env = ctx.createGain();
-      osc2env.gain.value = 0.06;
+      osc.connect(lp); osc2.connect(o2g); o2g.connect(lp);
+      lp.connect(env); env.connect(dry); env.connect(reverb);
 
-      osc1.connect(env);
-      osc2.connect(osc2env);
-      osc2env.connect(env);
-      env.connect(master);
-
-      // Breath noise — bandpass around note freq for airy texture
-      const breath = ctx.createBufferSource();
-      breath.buffer = noiseBuf;
-      breath.loop = true;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = freq * 1.4;
-      bp.Q.value = 1.8;
-      const breathEnv = ctx.createGain();
-      breathEnv.gain.setValueAtTime(0, when);
-      breathEnv.gain.linearRampToValueAtTime(0.038, when + 0.04);
-      breathEnv.gain.linearRampToValueAtTime(0.014, when + dur - 0.08);
-      breathEnv.gain.linearRampToValueAtTime(0, when + dur);
-      breath.connect(bp);
-      bp.connect(breathEnv);
-      breathEnv.connect(master);
-
-      const end = when + dur + 0.05;
-      osc1.start(when);   osc1.stop(end);
-      osc2.start(when);   osc2.stop(end);
-      vib.start(when);    vib.stop(end);
-      breath.start(when); breath.stop(end);
+      const end = when + dur + 0.1;
+      osc.start(when);  osc.stop(end);
+      osc2.start(when); osc2.stop(end);
     };
 
-    noteIdxRef.current = 0;
-    nextTimeRef.current = ctx.currentTime + 0.4;
+    stepIdxRef.current = 3;
+    nextTimeRef.current = ctx.currentTime + 0.6;
 
     const schedule = () => {
       if (!ctxRef.current) return;
-      const lookahead = 0.5;
+      const lookahead = 1.2;
       while (nextTimeRef.current < ctx.currentTime + lookahead) {
-        const idx = melody[noteIdxRef.current % melody.length];
-        playNote(scale[idx], nextTimeRef.current, step - 0.05);
-        nextTimeRef.current += step;
-        noteIdxRef.current++;
+        const when = nextTimeRef.current;
+        // Random walk that favours small melodic steps, occasional leaps.
+        let idx = stepIdxRef.current;
+        const r = Math.random();
+        if (r < 0.4) idx += (Math.random() < 0.5 ? 1 : -1);
+        else if (r < 0.7) idx += (Math.random() < 0.5 ? 2 : -2);
+        else if (r < 0.85) idx += (Math.random() < 0.5 ? 3 : -3);
+        idx = Math.max(0, Math.min(scale.length - 1, idx));
+        stepIdxRef.current = idx;
+
+        pluck(scale[idx], when, 0.34 + Math.random() * 0.16);
+        // Occasional gentle companion note a third/fifth above
+        if (Math.random() < 0.28) {
+          const hi = Math.min(scale.length - 1, idx + (Math.random() < 0.5 ? 2 : 3));
+          pluck(scale[hi], when + 0.10, 0.14 + Math.random() * 0.08);
+        }
+        // Sparse, uneven spacing so it never feels like a loop
+        nextTimeRef.current += 1.1 + Math.random() * 1.9 + (Math.random() < 0.15 ? 1.6 : 0);
       }
-      schedRef.current = setTimeout(schedule, 120);
+      schedRef.current = setTimeout(schedule, 200);
     };
     schedule();
 
@@ -182,13 +274,15 @@ function useDungeonAmbience() {
     if (schedRef.current) clearTimeout(schedRef.current);
     if (!masterRef.current || !ctxRef.current) return;
     const ctx = ctxRef.current;
-    masterRef.current.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
+    masterRef.current.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.0);
+    droneRef.current.forEach(n => { try { (n as OscillatorNode).stop?.(ctx.currentTime + 1.1); } catch { /* gain nodes have no stop */ } });
+    droneRef.current = [];
     setTimeout(() => {
       ctx.close();
       ctxRef.current = null;
       masterRef.current = null;
       setEnabled(false);
-    }, 900);
+    }, 1200);
   }, []);
 
   const toggle = useCallback(() => {
@@ -503,8 +597,8 @@ interface SumarioProps { t: typeof dicionario['pt']; idioma: Idioma; toggleIdiom
 
 function Sumario({ t, idioma, toggleIdioma, voltar, navigateTo }: SumarioProps) {
   return (
-    <div className="flex w-full h-full">
-      <div className="w-1/2 border-r border-ink/15 p-8 md:p-10 flex flex-col items-center justify-center text-center relative">
+    <div className="flex flex-col md:flex-row w-full h-full">
+      <div className="w-full md:w-1/2 md:border-r border-ink/15 p-8 md:p-10 flex flex-col items-center justify-center text-center relative">
         <button onClick={toggleIdioma} className="absolute top-6 right-6 px-3 py-1 border border-ink/40 hover:border-gold hover:text-gold text-xs tracking-widest uppercase transition-all cursor-pointer" style={{ fontFamily: '"Cinzel", serif', color: '#1c1008' }}>
           {idioma === 'pt' ? 'EN 🇬🇧' : 'PT 🇧🇷'}
         </button>
@@ -520,7 +614,7 @@ function Sumario({ t, idioma, toggleIdioma, voltar, navigateTo }: SumarioProps) 
           {t.geral.fecharTomo}
         </button>
       </div>
-      <div className="w-1/2 p-8 md:p-10 flex flex-col justify-center relative">
+      <div className="w-full md:w-1/2 p-8 md:p-10 flex flex-col justify-center relative">
         <h2 className="font-medieval text-3xl md:text-4xl font-bold mb-2 text-ink border-b border-rubric/30 pb-3" style={{ fontFamily: '"Cinzel Decorative", cursive' }}>{t.sumario.indice}</h2>
         <div className="gold-divider" />
         <ul className="flex flex-col gap-5 mt-4">
@@ -538,6 +632,231 @@ function Sumario({ t, idioma, toggleIdioma, voltar, navigateTo }: SumarioProps) 
   );
 }
 
+// ─── Mobile book: one page per screen, turn by swipe / arrows ───
+type MobilePage =
+  | { kind: 'sumario' }
+  | { kind: 'sobre' }
+  | { kind: 'projeto'; i: number }
+  | { kind: 'exp'; i: number }
+  | { kind: 'contato' };
+
+interface MobileBookProps {
+  t: typeof dicionario['pt'];
+  idioma: Idioma;
+  toggleIdioma: () => void;
+  onClose: () => void;
+  reduced: boolean;
+  soundEnabled: boolean;
+}
+
+function MobileBook({ t, idioma, toggleIdioma, onClose, reduced, soundEnabled }: MobileBookProps) {
+  const pages: MobilePage[] = [
+    { kind: 'sumario' },
+    { kind: 'sobre' },
+    ...projetosData.map((_, i) => ({ kind: 'projeto', i } as MobilePage)),
+    ...experienciasData.map((_, i) => ({ kind: 'exp', i } as MobilePage)),
+    { kind: 'contato' },
+  ];
+  const firstProjeto = 2;
+  const firstExp = 2 + projetosData.length;
+  const contatoIdx = pages.length - 1;
+
+  // ─── Modules (chapters): both the ‹ › buttons and finger swipes are
+  // confined to the CURRENT module's pages — they never spill into the
+  // next chapter. The only way to switch chapters is going back to the
+  // Sumário and picking one from there. ───
+  const modules = [
+    { key: 'sumario', label: idioma === 'pt' ? 'Sumário' : 'Index', start: 0, count: 1 },
+    { key: 'sobre', label: t.sumario.cap1, start: 1, count: 1 },
+    { key: 'projetos', label: t.sumario.cap2, start: firstProjeto, count: projetosData.length },
+    { key: 'jornada', label: t.sumario.cap3, start: firstExp, count: experienciasData.length },
+    { key: 'contato', label: t.sumario.cap4, start: contatoIdx, count: 1 },
+  ];
+
+  const [index, setIndex] = useState(0);
+  const [dir, setDir] = useState(1);
+  const touch = useRef<{ x: number; y: number } | null>(null);
+
+  const goTo = useCallback((next: number, d: number) => {
+    if (next < 0 || next >= pages.length || next === index) return;
+    setDir(d);
+    setIndex(next);
+    if (soundEnabled) playPageTurn();
+  }, [index, pages.length, soundEnabled]);
+
+  const moduleIdx = modules.reduce((acc, m, i) => (index >= m.start ? i : acc), 0);
+  const currentModule = modules[moduleIdx];
+  const posInModule = index - currentModule.start + 1;
+  const moduleFirst = currentModule.start;
+  const moduleLast = currentModule.start + currentModule.count - 1;
+
+  // Turn one page, but never cross the current module's boundary.
+  const turn = useCallback((d: number) => {
+    const next = index + d;
+    if (next < moduleFirst || next > moduleLast) return;
+    goTo(next, d);
+  }, [index, moduleFirst, moduleLast, goTo]);
+
+  const onTouchStart = (e: React.TouchEvent) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (!touch.current) return;
+    const dx = e.changedTouches[0].clientX - touch.current.x;
+    const dy = e.changedTouches[0].clientY - touch.current.y;
+    touch.current = null;
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4) turn(dx < 0 ? 1 : -1);
+  };
+
+  const page = pages[index];
+
+  const TopBar = ({ showBack = true }: { showBack?: boolean }) => (
+    <div className="flex items-center justify-between mb-4 shrink-0">
+      {showBack ? (
+        <button onClick={() => goTo(0, -1)} className="flex items-center gap-1.5 text-[11px] tracking-widest uppercase text-ink/55 cursor-pointer" style={{ fontFamily: '"Cinzel", serif' }}>
+          ← {t.sumario.indice}
+        </button>
+      ) : <span />}
+      <button onClick={toggleIdioma} className="px-2.5 py-1 border border-ink/30 text-[11px] tracking-widest uppercase" style={{ fontFamily: '"Cinzel", serif', color: '#1c1008' }}>
+        {idioma === 'pt' ? 'EN 🇬🇧' : 'PT 🇧🇷'}
+      </button>
+    </div>
+  );
+
+  const renderPage = () => {
+    switch (page.kind) {
+      case 'sumario':
+        return (
+          <div className="h-full flex flex-col items-center justify-center text-center px-2">
+            <button onClick={toggleIdioma} className="absolute top-5 right-5 px-2.5 py-1 border border-ink/30 text-[11px] tracking-widest uppercase" style={{ fontFamily: '"Cinzel", serif', color: '#1c1008' }}>
+              {idioma === 'pt' ? 'EN 🇬🇧' : 'PT 🇧🇷'}
+            </button>
+            <div className="w-16 h-16 border-2 border-ink/50 flex items-center justify-center mb-4" style={{ transform: 'rotate(45deg)' }}>
+              <span className="text-3xl font-medieval text-ink/70" style={{ transform: 'rotate(-45deg)' }}>G</span>
+            </div>
+            <h2 className="font-medieval text-2xl text-ink/80 mb-1">{t.sumario.tituloArte}</h2>
+            <div className="gold-divider w-2/3 mx-auto" />
+            <p className="font-body italic text-sm text-ink/60 mt-1 mb-6">{t.sumario.subtituloArte}</p>
+            <ul className="flex flex-col gap-4 w-full max-w-[240px]">
+              {([[1, t.sumario.cap1], [firstProjeto, t.sumario.cap2], [firstExp, t.sumario.cap3], [contatoIdx, t.sumario.cap4]] as [number, string][]).map(([to, label]) => (
+                <li key={to}>
+                  <button onClick={() => goTo(to, 1)} className="w-full text-left text-lg text-ink border-b border-ink/10 pb-1.5 cursor-pointer" style={{ fontFamily: '"Cinzel", serif' }}>
+                    {label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button onClick={onClose} className="mt-8 text-[11px] tracking-widest text-ink/45 uppercase cursor-pointer" style={{ fontFamily: '"Cinzel", serif' }}>
+              {t.geral.fecharTomo}
+            </button>
+          </div>
+        );
+      case 'sobre': {
+        const s = t.sobreMim;
+        return (
+          <div className="h-full flex flex-col">
+            <TopBar />
+            <h2 className="text-2xl font-bold text-ink leading-tight mb-1" style={{ fontFamily: '"Cinzel Decorative", cursive' }}>{s.titulo}</h2>
+            <div className="gold-divider mb-3" />
+            <div className="flex-1 overflow-y-auto scrollbar-parchment pr-1 text-[15px] leading-relaxed text-justify text-ink/90 space-y-3" style={{ fontFamily: '"IM Fell English", serif' }}>
+              <p>{s.p1_1}<strong style={{ fontFamily: '"Cinzel", serif' }}>Gustavo Firmino</strong>{s.p1_2}<strong style={{ color: '#8b0000' }}>React</strong>{s.p1_3}</p>
+              <p>{s.p2_1}<strong style={{ color: '#8b0000' }}>Java + Spring Boot</strong>{s.p2_2}</p>
+              <p>{s.p3}</p>
+              <div className="border-t border-ink/15 pt-3">
+                <p className="text-[10px] tracking-widest uppercase mb-2 opacity-60" style={{ fontFamily: '"Cinzel", serif' }}>Arsenal</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {['Java', 'Spring Boot', 'React', 'Next.js', 'TypeScript', 'Node.js', 'PostgreSQL', 'Docker'].map(sk => (
+                    <span key={sk} className="text-[11px] px-2 py-0.5 border border-ink/25 text-ink/80" style={{ fontFamily: '"Cinzel", serif' }}>{sk}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      case 'projeto': {
+        const p = projetosData[page.i];
+        return (
+          <div className="h-full flex flex-col">
+            <TopBar />
+            <span className="self-start text-[11px] font-bold px-2.5 py-0.5 mb-2" style={{ background: '#8b0000', color: '#f2e4c4', fontFamily: '"Cinzel", serif', letterSpacing: '0.08em' }}>{p.data[idioma]}</span>
+            <h3 className="text-xl font-bold text-ink leading-tight mb-3" style={{ fontFamily: '"Cinzel Decorative", cursive' }}>{p.titulo[idioma]}</h3>
+            <div className="border-2 border-ink/30 overflow-hidden mb-3 shrink-0" style={{ background: '#e8d0a0', height: 168 }}>
+              <img src={p.imagem} alt={p.titulo[idioma]} className="w-full h-full object-cover" style={{ filter: 'sepia(0.25)' }} loading="eager" />
+            </div>
+            <div className="flex flex-wrap gap-1.5 mb-3 shrink-0">
+              {p.tecnologias.map(tc => <span key={tc} className="text-[11px] px-2 py-0.5 border border-ink/25 text-ink/75" style={{ fontFamily: '"Cinzel", serif' }}>{tc}</span>)}
+            </div>
+            <p className="flex-1 overflow-y-auto scrollbar-parchment pr-1 text-[15px] text-justify leading-relaxed text-ink/90" style={{ fontFamily: '"IM Fell English", serif' }}>{p.descricao[idioma]}</p>
+            <a href={p.github} target="_blank" rel="noreferrer" className="block text-center px-4 py-2.5 mt-3 border-2 border-ink text-ink font-bold shrink-0" style={{ fontFamily: '"Cinzel", serif', fontSize: '0.72rem', letterSpacing: '0.08em' }}>{t.projetos.btnGithub}</a>
+          </div>
+        );
+      }
+      case 'exp': {
+        const e = experienciasData[page.i];
+        return (
+          <div className="h-full flex flex-col">
+            <TopBar />
+            <h2 className="text-2xl font-bold text-ink leading-tight mb-1" style={{ fontFamily: '"Cinzel Decorative", cursive' }}>{t.experiencias.titulo}</h2>
+            <div className="gold-divider mb-4" />
+            <div className="flex-1 overflow-y-auto scrollbar-parchment pr-1">
+              <div className="relative pl-5 border-l-2 border-rubric/35">
+                <div className="absolute w-2.5 h-2.5 bg-rubric -left-[7px] top-1.5" style={{ transform: 'rotate(45deg)' }} />
+                <h3 className="text-xl font-bold leading-tight mb-0.5" style={{ fontFamily: '"Cinzel Decorative", cursive', color: '#8b0000' }}>{e.cargo[idioma]}</h3>
+                <span className="text-sm italic text-ink/55 block mb-1" style={{ fontFamily: '"IM Fell English", serif' }}>{e.periodo[idioma]}</span>
+                <h4 className="text-base font-bold mb-2 flex items-center gap-1.5 text-ink/80" style={{ fontFamily: '"Cinzel", serif' }}>
+                  <span>{e.emoji}</span>{typeof e.instituicao === 'string' ? e.instituicao : e.instituicao[idioma]}
+                </h4>
+                <p className="text-[15px] leading-relaxed text-justify text-ink/80" style={{ fontFamily: '"IM Fell English", serif' }}>{e.descricao[idioma]}</p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      case 'contato':
+        return (
+          <div className="h-full overflow-y-auto scrollbar-parchment">
+            <Contato voltar={() => goTo(0, -1)} idioma={idioma} toggleIdioma={toggleIdioma} />
+          </div>
+        );
+    }
+  };
+
+  return (
+    <motion.div key="open-m" style={{ position: 'relative', zIndex: 20, width: '100%', height: '100dvh', padding: '8px' }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.25 } }} transition={{ duration: 0.35 }}>
+      <div style={{ position: 'absolute', inset: 8, border: '2px solid #3d2008', boxShadow: '0 12px 40px rgba(0,0,0,0.9), inset 0 0 0 1px rgba(200,146,15,0.12)', overflow: 'hidden', perspective: '1400px' }}
+        onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <AnimatePresence mode="popLayout" custom={dir} initial={false}>
+          <motion.div key={index} custom={dir}
+            className="page-texture absolute inset-0"
+            style={{ padding: '18px 18px 64px', transformOrigin: dir > 0 ? 'left center' : 'right center' }}
+            initial={reduced ? { opacity: 0 } : { opacity: 0, x: dir > 0 ? '55%' : '-55%', rotateY: dir > 0 ? -18 : 18 }}
+            animate={{ opacity: 1, x: 0, rotateY: 0 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, x: dir > 0 ? '-45%' : '45%', rotateY: dir > 0 ? 14 : -14 }}
+            transition={{ duration: reduced ? 0.12 : 0.42, ease: [0.4, 0, 0.2, 1] }}>
+            {renderPage()}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Controles de página — presos ao módulo atual (não passam para o próximo capítulo).
+            Pílula central, cantos livres p/ o botão Som. */}
+        <div className="absolute left-0 right-0 bottom-0 flex justify-center pb-3 pointer-events-none" style={{ zIndex: 30 }}>
+          <div className="pointer-events-auto flex items-center gap-2.5 pl-2 pr-2 py-1 rounded-full shadow-md" style={{ background: 'rgba(242,228,196,0.92)', border: '1px solid rgba(28,16,8,0.22)', backdropFilter: 'blur(2px)' }}>
+            <button onClick={() => turn(-1)} disabled={index === moduleFirst}
+              className={`w-9 h-9 flex items-center justify-center rounded-full text-xl ${index === moduleFirst ? 'opacity-20' : 'text-ink/75 active:bg-ink/10'}`}
+              style={{ fontFamily: 'serif' }} aria-label="Página anterior">‹</button>
+            <span className="text-ink/50 text-[11px] whitespace-nowrap px-1" style={{ fontFamily: '"Cinzel", serif' }}>
+              {currentModule.label}{currentModule.count > 1 ? ` · ${posInModule}/${currentModule.count}` : ''}
+            </span>
+            <button onClick={() => turn(1)} disabled={index === moduleLast}
+              className={`w-9 h-9 flex items-center justify-center rounded-full text-xl ${index === moduleLast ? 'opacity-20' : 'text-ink/75 active:bg-ink/10'}`}
+              style={{ fontFamily: 'serif' }} aria-label="Próxima página">›</button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── App Principal ───
 export default function App() {
   const [bookState, setBookState] = useState<BookState>('closed');
@@ -550,6 +869,8 @@ export default function App() {
   const [isClosing, setIsClosing] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const { enabled: soundEnabled, toggle: toggleSound } = useDungeonAmbience();
+  const reduced = usePrefersReducedMotion();
+  const isMobile = useIsMobile();
 
   const t = dicionario[idioma];
   const toggleIdioma = () => setIdioma(i => i === 'pt' ? 'en' : 'pt');
@@ -563,15 +884,19 @@ export default function App() {
     setFlipDirection(toIdx >= fromIdx ? 'forward' : 'backward');
     setPreviousPage(currentPage);
     setCurrentPage(page);
+    if (soundEnabled) playPageTurn();
+    // On phones or with reduced motion, swap pages instantly (no 3D flip).
+    if (isMobile || reduced) { setIsFlipping(false); return; }
     setIsFlipping(true);
     const t1 = setTimeout(() => setIsFlipping(false), 820);
     timers.current.push(t1);
-  }, [currentPage, isFlipping]);
+  }, [currentPage, isFlipping, soundEnabled, isMobile, reduced]);
 
   const openBook = useCallback(() => {
     setCoverFlipDone(false);
     setBookState('open');
-  }, []);
+    if (soundEnabled) playPageTurn();
+  }, [soundEnabled]);
 
   const closeBook = useCallback(() => {
     setBookState('closed');
@@ -582,8 +907,9 @@ export default function App() {
   }, []);
 
   const initiateClose = useCallback(() => {
+    if (isMobile || reduced) { closeBook(); return; }  // no cover-flip animation on phones
     setIsClosing(true);
-  }, []);
+  }, [isMobile, reduced, closeBook]);
 
   const sharedProps = { idioma, toggleIdioma };
 
@@ -600,7 +926,8 @@ export default function App() {
   return (
     <div className="min-h-screen flex items-center justify-center overflow-hidden relative" style={{ background: '#0a0603' }}>
       <DungeonBackground />
-      <DustParticles />
+      {!reduced && <DustParticles />}
+      {!reduced && !isMobile && <MouseGlow />}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.85) 100%)', zIndex: 5 }} />
 
       <AnimatePresence mode="wait">
@@ -609,7 +936,7 @@ export default function App() {
         {bookState === 'closed' && (
           <motion.div key="closed" style={{ position: 'relative', zIndex: 20 }}
             initial={{ opacity: 0, y: 32, scale: 0.92 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            animate={{ opacity: 1, y: 0, scale: isMobile ? 0.68 : 1 }}
             exit={{ opacity: 0, y: -20, transition: { duration: 0.35, ease: 'easeIn' } }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
           >
@@ -619,8 +946,13 @@ export default function App() {
           </motion.div>
         )}
 
-        {/* ── ABERTO ── */}
-        {bookState === 'open' && (
+        {/* ── ABERTO (MOBILE): folheador, uma página por tela ── */}
+        {bookState === 'open' && isMobile && (
+          <MobileBook key="open-m" t={t} idioma={idioma} toggleIdioma={toggleIdioma} onClose={closeBook} reduced={reduced} soundEnabled={soundEnabled} />
+        )}
+
+        {/* ── ABERTO (DESKTOP): livro de duas páginas ── */}
+        {bookState === 'open' && !isMobile && (
           <motion.div key="open" style={{ position: 'relative', zIndex: 20, width: '100%', maxWidth: '1080px', padding: '0 16px' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -642,14 +974,14 @@ export default function App() {
               {isFlipping && (
                 <motion.div key={`prev-${previousPage}`} className="absolute inset-0" style={{ zIndex: 2, pointerEvents: 'none' }}
                   initial={{ opacity: 1 }} animate={{ opacity: [1, 1, 0, 0] }}
-                  transition={{ duration: 0.78, times: [0, 0.42, 0.58, 1] }}>
+                  transition={{ duration: 0.78, times: [0, 0.84, 0.92, 1] }}>
                   {renderPage(previousPage)}
                 </motion.div>
               )}
               <motion.div key={`curr-${currentPage}`} className="absolute inset-0" style={{ zIndex: 1 }}
                 initial={isFlipping ? { opacity: 0 } : false}
                 animate={isFlipping ? { opacity: [0, 0, 1, 1] } : { opacity: coverFlipDone && !isClosing ? 1 : 0 }}
-                transition={isFlipping ? { duration: 0.78, times: [0, 0.42, 0.58, 1] } : coverFlipDone ? { duration: 0.15 } : { duration: 0 }}>
+                transition={isFlipping ? { duration: 0.78, times: [0, 0.86, 0.94, 1] } : coverFlipDone ? { duration: 0.15 } : { duration: 0 }}>
                 {renderPage(currentPage)}
               </motion.div>
 

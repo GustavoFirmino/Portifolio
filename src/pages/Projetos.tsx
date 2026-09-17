@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { motion, useAnimation } from 'framer-motion';
 import { dicionario } from '../dicionario';
 import { projetos } from '../data/content';
 
@@ -30,38 +30,36 @@ interface ProjetosProps {
 }
 
 export function Projetos({ voltar, idioma, toggleIdioma }: ProjetosProps) {
-  const [pagina, setPagina] = useState(0);
+  const [pagina, setPagina] = useState(0);   // target page (drives button state)
+  const [shown, setShown] = useState(0);      // page whose content is on screen
   const [flipping, setFlipping] = useState(false);
   const [flipDir, setFlipDir] = useState<'forward' | 'backward'>('forward');
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const projeto = projetos[pagina];
+  const projeto = projetos[shown];
   const t = dicionario[idioma];
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
-  const avancar = () => {
-    if (pagina < projetos.length - 1 && !flipping) {
-      setFlipDir('forward');
-      setFlipping(true);
-      const t1 = setTimeout(() => setPagina(p => p + 1), 390);
-      const t2 = setTimeout(() => setFlipping(false), 820);
-      timers.current.push(t1, t2);
-    }
+  const irPara = (destino: number) => {
+    if (destino < 0 || destino >= projetos.length || flipping) return;
+    const instant = typeof window !== 'undefined' &&
+      (window.innerWidth < 768 || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+    setPagina(destino);
+    if (instant) { setShown(destino); return; }
+    setFlipDir(destino > shown ? 'forward' : 'backward');
+    setFlipping(true);
+    // Swap the content only near the end of the turn, so no words flash mid-flip.
+    const t1 = setTimeout(() => setShown(destino), 660);
+    const t2 = setTimeout(() => setFlipping(false), 820);
+    timers.current.push(t1, t2);
   };
-  const voltar2 = () => {
-    if (pagina > 0 && !flipping) {
-      setFlipDir('backward');
-      setFlipping(true);
-      const t1 = setTimeout(() => setPagina(p => p - 1), 390);
-      const t2 = setTimeout(() => setFlipping(false), 820);
-      timers.current.push(t1, t2);
-    }
-  };
+  const avancar = () => irPara(pagina + 1);
+  const voltar2 = () => irPara(pagina - 1);
 
   return (
-    <div className="flex w-full h-full relative">
+    <div className="flex flex-col md:flex-row w-full h-full relative">
       {/* ── Página esquerda ── */}
-      <div className="w-1/2 border-r border-ink/15 p-7 md:p-10 flex flex-col relative">
+      <div className="w-full md:w-1/2 md:border-r border-ink/15 p-7 md:p-10 flex flex-col relative">
         <motion.button
           onClick={voltar}
           whileHover={{ x: -4 }}
@@ -81,15 +79,7 @@ export function Projetos({ voltar, idioma, toggleIdioma }: ProjetosProps) {
           <div className="gold-divider mt-2" />
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pagina}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.3 }}
-            className="flex-1 flex flex-col min-h-0"
-          >
+          <div className="flex-1 flex flex-col min-h-0">
             {/* Badge data */}
             <span
               className="self-start text-xs font-bold px-3 py-1 mb-3"
@@ -138,12 +128,11 @@ export function Projetos({ voltar, idioma, toggleIdioma }: ProjetosProps) {
                 </span>
               ))}
             </div>
-          </motion.div>
-        </AnimatePresence>
+          </div>
       </div>
 
       {/* ── Página direita ── */}
-      <div className="w-1/2 p-7 md:p-10 flex flex-col relative">
+      <div className="w-full md:w-1/2 p-7 md:p-10 flex flex-col relative">
         <div className="flex justify-end mb-6">
           <button
             onClick={toggleIdioma}
@@ -154,15 +143,7 @@ export function Projetos({ voltar, idioma, toggleIdioma }: ProjetosProps) {
           </button>
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pagina}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.3 }}
-            className="flex-1 flex flex-col justify-center min-h-0"
-          >
+          <div className="flex-1 flex flex-col justify-center min-h-0">
             <h4
               className="text-base font-bold mb-3 text-rubric uppercase tracking-widest"
               style={{ fontFamily: '"Cinzel", serif' }}
@@ -171,7 +152,7 @@ export function Projetos({ voltar, idioma, toggleIdioma }: ProjetosProps) {
             </h4>
             <div className="gold-divider mb-4" />
             <p
-              className="text-lg md:text-xl text-justify leading-relaxed text-ink/90 mb-8 flex-1 overflow-y-auto scrollbar-parchment"
+              className="text-lg md:text-xl text-justify leading-relaxed text-ink/90 mb-8 flex-1 md:overflow-y-auto scrollbar-parchment"
               style={{ fontFamily: '"IM Fell English", serif' }}
             >
               {projeto.descricao[idioma]}
@@ -187,8 +168,7 @@ export function Projetos({ voltar, idioma, toggleIdioma }: ProjetosProps) {
             >
               {t.projetos.btnGithub}
             </motion.a>
-          </motion.div>
-        </AnimatePresence>
+          </div>
 
         {/* Paginação */}
         <div className="mt-auto pt-4 border-t border-ink/15 flex justify-between items-center shrink-0">

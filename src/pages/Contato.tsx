@@ -43,9 +43,9 @@ export function Contato({ voltar, idioma, toggleIdioma }: ContatoProps) {
   };
 
   return (
-    <div className="flex w-full h-full">
+    <div className="flex flex-col md:flex-row w-full h-full">
       {/* ── Página esquerda ── */}
-      <div className="w-1/2 border-r border-ink/15 p-7 md:p-10 flex flex-col relative">
+      <div className="w-full md:w-1/2 md:border-r border-ink/15 p-7 md:p-10 flex flex-col relative">
         <motion.button
           onClick={voltar}
           whileHover={{ x: -4 }}
@@ -126,7 +126,7 @@ export function Contato({ voltar, idioma, toggleIdioma }: ContatoProps) {
       </div>
 
       {/* ── Página direita ── */}
-      <div className="w-1/2 p-7 md:p-10 flex flex-col justify-center relative">
+      <div className="w-full md:w-1/2 p-7 md:p-10 flex flex-col justify-center relative">
         <h3
           className="text-xl font-bold mb-2"
           style={{ fontFamily: '"Cinzel Decorative", cursive', color: '#8b0000' }}

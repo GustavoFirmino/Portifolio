@@ -28,8 +28,7 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     width: 210mm;
-    height: 297mm;
-    overflow: hidden;
+    min-height: 297mm;
   }
 
   a { color: inherit; text-decoration: none; }
@@ -38,12 +37,11 @@
   /* ── PAGE ── */
   .page {
     width: 210mm;
-    height: 297mm;
+    min-height: 594mm;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 68mm 1fr;
     grid-template-rows: auto 1fr;
-    overflow: hidden;
   }
 
   /* ── HEADER ── */
@@ -109,7 +107,6 @@
     background: var(--mid);
     color: #e2e8f0;
     padding: 20px 18px;
-    overflow: hidden;
   }
 
   .sidebar-section { margin-bottom: 16px; }
@@ -172,7 +169,6 @@
   .main {
     padding: 20px 26px;
     background: #fff;
-    overflow: hidden;
   }
 
   .section { margin-bottom: 16px; }
@@ -330,17 +326,16 @@
     margin-left: 4px;
   }
 
+  .exp-item, .edu-item, .project-card { break-inside: avoid; }
+  .section-title { break-after: avoid; }
+
   @page {
     size: 210mm 297mm;
     margin: 0;
   }
 
   @media print {
-    html, body {
-      width: 210mm;
-      height: 297mm;
-      overflow: hidden;
-    }
+    html, body { width: 210mm; }
     .page { margin: 0; }
   }
 </style>
@@ -352,7 +347,7 @@
   <header class="header">
     <div class="header-info">
       <div class="header-name">Gustavo Pessoa Firmino Duarte</div>
-      <div class="header-title">Desenvolvedor de Software Júnior</div>
+      <div class="header-title">Desenvolvedor Fullstack · Java &amp; React</div>
       <div class="header-links">
         <a href="mailto:gustavopessoa00719@gmail.com">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -385,36 +380,36 @@
       <div class="sidebar-title">Habilidades</div>
       <div class="skill-list">
         <div class="skill-item">
-          React / TypeScript
+          Java + Spring Boot
           <div class="skill-bar"><div class="skill-bar-fill" style="width:88%"></div></div>
         </div>
         <div class="skill-item">
-          Java + Spring Boot
-          <div class="skill-bar"><div class="skill-bar-fill" style="width:82%"></div></div>
+          React / Next.js
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:86%"></div></div>
         </div>
         <div class="skill-item">
-          Node.js / JavaScript
-          <div class="skill-bar"><div class="skill-bar-fill" style="width:80%"></div></div>
+          TypeScript / JavaScript
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:84%"></div></div>
         </div>
         <div class="skill-item">
-          SQL / Banco de Dados
-          <div class="skill-bar"><div class="skill-bar-fill" style="width:72%"></div></div>
+          Node.js
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:78%"></div></div>
+        </div>
+        <div class="skill-item">
+          SQL / PostgreSQL
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:75%"></div></div>
         </div>
         <div class="skill-item">
           Docker / Git
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:72%"></div></div>
+        </div>
+        <div class="skill-item">
+          Spring Security / JPA
           <div class="skill-bar"><div class="skill-bar-fill" style="width:70%"></div></div>
         </div>
         <div class="skill-item">
           Python
-          <div class="skill-bar"><div class="skill-bar-fill" style="width:60%"></div></div>
-        </div>
-        <div class="skill-item">
-          Swift (iOS)
-          <div class="skill-bar"><div class="skill-bar-fill" style="width:50%"></div></div>
-        </div>
-        <div class="skill-item">
-          SAP-IBP
-          <div class="skill-bar"><div class="skill-bar-fill" style="width:45%"></div></div>
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:58%"></div></div>
         </div>
       </div>
     </div>
@@ -469,10 +464,12 @@
     <div class="section">
       <div class="section-title">Perfil</div>
       <p class="summary">
-        Desenvolvedor de software com experiência em ambientes corporativos de alta complexidade e setor público.
-        Atualmente desenvolvendo produtos fullstack no <strong>Grupo ROI</strong>, com histórico em suporte
-        internacional de aplicações na <strong>ArcelorMittal</strong>. Graduando em Engenharia de Software pela
-        PUC Minas, com forte base em arquitetura limpa, boas práticas e entrega contínua.
+        Desenvolvedor com foco em <strong>React</strong> e <strong>Java</strong>. Atualmente Desenvolvedor
+        Frontend na <strong>Olimpus</strong>, construindo o Portal do Hermes / Olimpus Hub — ERP para
+        vendedores da Amazon — em Next.js e React, com padrão BFF e integração a uma API .NET.
+        Também desenvolvo em Java + Spring Boot em projetos como o sistema da APAC Feminina.
+        Histórico em produtos web no <strong>Grupo ROI</strong> e em suporte internacional na
+        <strong>ArcelorMittal</strong>. Graduando em Engenharia de Software pela PUC Minas.
         Inglês fluente com uso diário em contexto profissional.
       </p>
     </div>
@@ -484,17 +481,31 @@
         <div class="exp-header">
           <div>
             <div class="exp-company">
-              Grupo ROI
+              Olimpus
               <span class="badge-current">Atual</span>
             </div>
-            <div class="exp-role">Desenvolvedor de Software Júnior — Loot &amp; ROI Club</div>
+            <div class="exp-role">Desenvolvedor Frontend — Hermes / Olimpus Hub</div>
           </div>
-          <div class="exp-period">Mar/2026 — Presente</div>
+          <div class="exp-period">Abr/2026 — Presente</div>
         </div>
         <ul class="exp-bullets">
-          <li>Desenvolvimento e manutenção fullstack dos produtos <strong>Loot</strong> e <strong>ROI Club</strong>.</li>
-          <li>Implementação de novas funcionalidades, correção de bugs e revisão de código.</li>
-          <li>Colaboração em ambiente ágil com foco em qualidade e entrega contínua.</li>
+          <li>Desenvolvimento do Portal web do <strong>Hermes / Olimpus Hub</strong> — ERP para vendedores da Amazon — em <strong>Next.js e React</strong>, com padrão BFF.</li>
+          <li>Entrega de módulos como dashboard de Ads, planejamento por projeção e busca de fornecedores, com integração à Olympus API (.NET).</li>
+          <li>Atuação em ambiente ágil com revisão de código e cuidado com UI, acessibilidade e segurança.</li>
+        </ul>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-header">
+          <div>
+            <div class="exp-company">Grupo ROI</div>
+            <div class="exp-role">Desenvolvedor de Software Júnior — Loot &amp; ROI Club</div>
+          </div>
+          <div class="exp-period">Mar/2026 — Ago/2026</div>
+        </div>
+        <ul class="exp-bullets">
+          <li>Desenvolvimento fullstack dos produtos <strong>Loot</strong> e <strong>ROI Club</strong> com React e Node.js.</li>
+          <li>Implementação de funcionalidades, correção de bugs e revisão de código em ambiente ágil.</li>
         </ul>
       </div>
 
@@ -507,9 +518,8 @@
           <div class="exp-period">Fev/2024 — Fev/2026</div>
         </div>
         <ul class="exp-bullets">
-          <li>Suporte internacional de aplicações com comunicação direta com clientes em inglês e espanhol.</li>
-          <li>Análise de incidentes, validação de sistemas e documentação técnica.</li>
-          <li>Operação e suporte a processos no ecossistema <strong>SAP-IBP</strong>.</li>
+          <li>Suporte internacional com comunicação direta com clientes em inglês e espanhol.</li>
+          <li>Análise de incidentes, validação de sistemas e operação no ecossistema <strong>SAP-IBP</strong>.</li>
         </ul>
       </div>
 
@@ -522,8 +532,7 @@
           <div class="exp-period">Jul/2023 — Jan/2024</div>
         </div>
         <ul class="exp-bullets">
-          <li>Suporte administrativo e técnico durante a graduação em Ciência da Computação.</li>
-          <li>Apoio a processos internos, gestão de documentação e suporte a usuários.</li>
+          <li>Suporte técnico e administrativo, apoio a processos internos e a usuários.</li>
         </ul>
       </div>
 
@@ -535,16 +544,16 @@
 
         <div class="project-card">
           <div class="project-name">
-            🏰 <a href="https://portifolio-rho-beige-65.vercel.app/" target="_blank">Portfólio Profissional</a>
+            💊 <span style="color:var(--accent)">APAC Feminina</span>
           </div>
           <div class="project-desc">
-            Portfólio interativo com temática medieval, animações 3D, internacionalização PT/EN e ambient sound via Web Audio API.
+            Sistema de gestão de estoque farmacêutico e acompanhamento clínico de pacientes, na Agência Experimental de Software. Backend Java 26 + Spring Boot 4 (arquitetura em camadas, RBAC) e frontend Next.js, em Scrum.
           </div>
           <div class="project-tags">
-            <span class="tag">React</span>
-            <span class="tag">TypeScript</span>
-            <span class="tag">Tailwind</span>
-            <span class="tag">Framer Motion</span>
+            <span class="tag">Java 26</span>
+            <span class="tag">Spring Boot 4</span>
+            <span class="tag">Next.js</span>
+            <span class="tag">RBAC</span>
           </div>
         </div>
 
@@ -559,6 +568,21 @@
             <span class="tag">Java 21</span>
             <span class="tag">Spring Boot 3</span>
             <span class="tag">Docker</span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-name">
+            🏰 <a href="https://portifolio-rho-beige-65.vercel.app/" target="_blank">Portfólio Profissional</a>
+          </div>
+          <div class="project-desc">
+            Portfólio interativo com temática medieval, animações 3D, internacionalização PT/EN e ambient sound via Web Audio API.
+          </div>
+          <div class="project-tags">
+            <span class="tag">React</span>
+            <span class="tag">TypeScript</span>
+            <span class="tag">Tailwind</span>
+            <span class="tag">Framer Motion</span>
           </div>
         </div>
 

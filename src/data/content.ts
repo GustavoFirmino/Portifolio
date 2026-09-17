@@ -20,6 +20,18 @@ export interface Experiencia {
 
 export const projetos: Projeto[] = [
   {
+    id: 8,
+    titulo: { pt: "APAC Feminina", en: "APAC Feminina" },
+    data: { pt: "2026", en: "2026" },
+    descricao: {
+      pt: "Sistema de gestão de estoque farmacêutico e acompanhamento clínico de pacientes, desenvolvido na Agência Experimental de Software. Backend em Java 26 com Spring Boot 4 (arquitetura em camadas, Spring Security com RBAC) e frontend em Next.js, construído em Scrum com sprints semanais.",
+      en: "Pharmacy stock management and clinical patient tracking system, developed at the Experimental Software Agency. Java 26 backend with Spring Boot 4 (layered architecture, Spring Security with RBAC) and a Next.js frontend, built in Scrum with weekly sprints."
+    },
+    tecnologias: ["Java 26", "Spring Boot 4", "Next.js", "PostgreSQL", "RBAC"],
+    github: "https://github.com/agencia-experimental-de-software",
+    imagem: "/img-apac.svg"
+  },
+  {
     id: 1,
     titulo: { pt: "O Épico Portfólio (Este Tomo)", en: "The Epic Portfolio (This Tome)" },
     data: { pt: "Fevereiro 2026", en: "February 2026" },
@@ -108,9 +120,20 @@ export const projetos: Projeto[] = [
 export const experiencias: Experiencia[] = [
   {
     id: 1,
+    cargo: { pt: "Desenvolvedor Frontend", en: "Frontend Developer" },
+    instituicao: { pt: "Olimpus — Hermes / Olimpus Hub", en: "Olimpus — Hermes / Olimpus Hub" },
+    periodo: { pt: "Abr 2026 – Atual", en: "Apr 2026 – Present" },
+    descricao: {
+      pt: "Desenvolvimento do Portal web do Hermes / Olimpus Hub — ERP para vendedores da Amazon — em Next.js e React, com padrão BFF. Entrega de módulos como dashboard de Ads, planejamento por projeção e busca de fornecedores, com integração à Olympus API (.NET), em ambiente ágil com revisão de código.",
+      en: "Development of the Hermes / Olimpus Hub web portal — an ERP for Amazon sellers — in Next.js and React, with a BFF pattern. Delivery of modules such as the Ads dashboard, projection-based planning, and supplier search, integrated with the Olympus API (.NET), in an agile environment with code review."
+    },
+    emoji: "🛒"
+  },
+  {
+    id: 2,
     cargo: { pt: "Dev Júnior", en: "Junior Developer" },
     instituicao: "Grupo ROI",
-    periodo: { pt: "Mar 2026 – Atual", en: "Mar 2026 – Present" },
+    periodo: { pt: "Mar 2026 – Ago 2026", en: "Mar 2026 – Aug 2026" },
     descricao: {
       pt: "Desenvolvimento de funcionalidades fullstack para as plataformas Loot e ROI Club, produtos do Grupo ROI. Atuação com React e Node.js em ambiente ágil, participando do ciclo completo de desenvolvimento — da concepção ao deploy em produção.",
       en: "Full-stack feature development for the Loot and ROI Club platforms, products of Grupo ROI. Working with React and Node.js in an agile environment, participating in the full development cycle — from conception to production deployment."
@@ -118,7 +141,7 @@ export const experiencias: Experiencia[] = [
     emoji: "🚀"
   },
   {
-    id: 2,
+    id: 3,
     cargo: { pt: "Estagiário em Suporte Internacional", en: "International Support Intern" },
     instituicao: "ArcelorMittal Sistemas",
     periodo: { pt: "Fev 2024 – Fev 2026", en: "Feb 2024 – Feb 2026" },
@@ -129,7 +152,7 @@ export const experiencias: Experiencia[] = [
     emoji: "⚒️"
   },
   {
-    id: 3,
+    id: 4,
     cargo: { pt: "Estagiário em TI", en: "IT Intern" },
     instituicao: { pt: "Câmara Mun. de Nova Lima", en: "Nova Lima City Council" },
     periodo: { pt: "Jul 2023 – Jan 2024", en: "Jul 2023 – Jan 2024" },
@@ -140,7 +163,7 @@ export const experiencias: Experiencia[] = [
     emoji: "🏛️"
   },
   {
-    id: 4,
+    id: 5,
     cargo: { pt: "Atendimento e Operações", en: "Customer Service & Operations" },
     instituicao: "Cacau Show",
     periodo: { pt: "Junho 2020", en: "June 2020" },

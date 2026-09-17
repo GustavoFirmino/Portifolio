@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, useAnimation } from 'framer-motion';
 import { dicionario } from '../dicionario';
 import { experiencias } from '../data/content';
 
@@ -7,6 +7,27 @@ interface ExperienciasProps {
   voltar: () => void;
   idioma: 'pt' | 'en';
   toggleIdioma: () => void;
+}
+
+// ─── Page-turn leaf (matches the book's flip) ───
+function LeafOverlay({ direction }: { direction: 'forward' | 'backward' }) {
+  const isForward = direction === 'forward';
+  const controls = useAnimation();
+  useEffect(() => {
+    controls.start({ rotateY: isForward ? -180 : 180, transition: { duration: 0.78, ease: [0.4, 0, 0.25, 1] } });
+  }, []);
+  return (
+    <div style={{ position: 'absolute', top: 0, bottom: 0, left: isForward ? '50%' : 0, right: isForward ? 0 : '50%', perspective: '2200px', perspectiveOrigin: isForward ? '0% 50%' : '100% 50%', zIndex: 20, pointerEvents: 'none' }}>
+      <motion.div animate={controls} style={{ transformOrigin: isForward ? 'left center' : 'right center', transformStyle: 'preserve-3d', width: '100%', height: '100%', position: 'relative' }}>
+        <div className="page-texture backface-hidden" style={{ position: 'absolute', inset: 0, boxShadow: isForward ? 'inset -8px 0 20px rgba(0,0,0,0.18)' : 'inset 8px 0 20px rgba(0,0,0,0.18)' }}>
+          <div style={{ position: 'absolute', inset: 0, background: isForward ? 'linear-gradient(to right, rgba(0,0,0,0.14) 0%, rgba(0,0,0,0) 35%)' : 'linear-gradient(to left, rgba(0,0,0,0.14) 0%, rgba(0,0,0,0) 35%)' }} />
+        </div>
+        <div className="page-texture backface-hidden" style={{ position: 'absolute', inset: 0, transform: 'rotateY(180deg)', backgroundColor: '#ede0bc', boxShadow: isForward ? 'inset 8px 0 20px rgba(0,0,0,0.14)' : 'inset -8px 0 20px rgba(0,0,0,0.14)' }}>
+          <div style={{ position: 'absolute', inset: 0, background: isForward ? 'linear-gradient(to left, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 40%)' : 'linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 40%)' }} />
+        </div>
+      </motion.div>
+    </div>
+  );
 }
 
 function ExperienciaItem({ exp, idioma }: { exp: typeof experiencias[0]; idioma: 'pt' | 'en' }) {
@@ -46,21 +67,40 @@ function ExperienciaItem({ exp, idioma }: { exp: typeof experiencias[0]; idioma:
 }
 
 export function Experiencias({ voltar, idioma, toggleIdioma }: ExperienciasProps) {
-  const [pagina, setPagina] = useState(0);
+  const [pagina, setPagina] = useState(0);   // target page (drives button state)
+  const [shown, setShown] = useState(0);      // page whose content is on screen
+  const [flipping, setFlipping] = useState(false);
+  const [flipDir, setFlipDir] = useState<'forward' | 'backward'>('forward');
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const t = dicionario[idioma];
+
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   const ITENS_POR_PAGINA = 4;
   const totalPaginas = Math.ceil(experiencias.length / ITENS_POR_PAGINA);
-  const inicio = pagina * ITENS_POR_PAGINA;
+  const inicio = shown * ITENS_POR_PAGINA;
   const destaPagina = experiencias.slice(inicio, inicio + ITENS_POR_PAGINA);
-
   const esquerda = destaPagina.slice(0, 2);
   const direita = destaPagina.slice(2, 4);
 
+  const irPara = (destino: number) => {
+    if (destino < 0 || destino >= totalPaginas || flipping) return;
+    const instant = typeof window !== 'undefined' &&
+      (window.innerWidth < 768 || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+    setPagina(destino);
+    if (instant) { setShown(destino); return; }
+    setFlipDir(destino > shown ? 'forward' : 'backward');
+    setFlipping(true);
+    // Swap the content only near the end of the turn, so no words flash mid-flip.
+    const t1 = setTimeout(() => setShown(destino), 660);
+    const t2 = setTimeout(() => setFlipping(false), 820);
+    timers.current.push(t1, t2);
+  };
+
   return (
-    <div className="flex w-full h-full">
+    <div className="flex flex-col md:flex-row w-full h-full relative">
       {/* ── Página esquerda ── */}
-      <div className="w-1/2 border-r border-ink/15 p-7 md:p-10 flex flex-col relative">
+      <div className="w-full md:w-1/2 md:border-r border-ink/15 p-7 md:p-10 flex flex-col relative">
         <motion.button
           onClick={voltar}
           whileHover={{ x: -4 }}
@@ -80,24 +120,15 @@ export function Experiencias({ voltar, idioma, toggleIdioma }: ExperienciasProps
           <div className="gold-divider mt-2" />
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pagina}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.3 }}
-            className="flex-1 flex flex-col gap-7 overflow-y-auto scrollbar-parchment pr-1"
-          >
-            {esquerda.map(exp => (
-              <ExperienciaItem key={exp.id} exp={exp} idioma={idioma} />
-            ))}
-          </motion.div>
-        </AnimatePresence>
+        <div className="flex-1 flex flex-col gap-7 md:overflow-y-auto scrollbar-parchment pr-1">
+          {esquerda.map(exp => (
+            <ExperienciaItem key={exp.id} exp={exp} idioma={idioma} />
+          ))}
+        </div>
       </div>
 
       {/* ── Página direita ── */}
-      <div className="w-1/2 p-7 md:p-10 flex flex-col relative">
+      <div className="w-full md:w-1/2 p-7 md:p-10 flex flex-col relative">
         <div className="flex justify-end mb-6">
           <button
             onClick={toggleIdioma}
@@ -108,36 +139,27 @@ export function Experiencias({ voltar, idioma, toggleIdioma }: ExperienciasProps
           </button>
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pagina}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.3 }}
-            className="flex-1 flex flex-col gap-7 overflow-y-auto scrollbar-parchment pr-1"
-          >
-            {direita.length > 0
-              ? direita.map(exp => (
-                  <ExperienciaItem key={exp.id} exp={exp} idioma={idioma} />
-                ))
-              : (
-                <div className="flex-1 flex items-center justify-center opacity-20">
-                  <span style={{ fontFamily: '"Cinzel Decorative", cursive', fontSize: '3rem' }}>◆</span>
-                </div>
-              )
-            }
-          </motion.div>
-        </AnimatePresence>
+        <div className="flex-1 flex flex-col gap-7 md:overflow-y-auto scrollbar-parchment pr-1">
+          {direita.length > 0
+            ? direita.map(exp => (
+                <ExperienciaItem key={exp.id} exp={exp} idioma={idioma} />
+              ))
+            : (
+              <div className="flex-1 flex items-center justify-center opacity-20">
+                <span style={{ fontFamily: '"Cinzel Decorative", cursive', fontSize: '3rem' }}>◆</span>
+              </div>
+            )
+          }
+        </div>
 
         {/* Rodapé */}
         <div className="mt-auto pt-4 flex flex-col gap-3 shrink-0">
           {totalPaginas > 1 && (
             <div className="border-t border-ink/15 pt-3 flex justify-between items-center">
               <button
-                onClick={() => setPagina(p => p - 1)}
-                disabled={pagina === 0}
-                className={`font-cinzel text-sm transition-all ${pagina === 0 ? 'opacity-20 cursor-not-allowed' : 'hover:text-rubric hover:-translate-x-1 cursor-pointer'}`}
+                onClick={() => irPara(pagina - 1)}
+                disabled={pagina === 0 || flipping}
+                className={`font-cinzel text-sm transition-all ${pagina === 0 || flipping ? 'opacity-20 cursor-not-allowed' : 'hover:text-rubric hover:-translate-x-1 cursor-pointer'}`}
                 style={{ fontFamily: '"Cinzel", serif' }}
               >
                 ← Anterior
@@ -146,9 +168,9 @@ export function Experiencias({ voltar, idioma, toggleIdioma }: ExperienciasProps
                 {pagina + 1} / {totalPaginas}
               </span>
               <button
-                onClick={() => setPagina(p => p + 1)}
-                disabled={pagina === totalPaginas - 1}
-                className={`font-cinzel text-sm transition-all ${pagina === totalPaginas - 1 ? 'opacity-20 cursor-not-allowed' : 'hover:text-rubric hover:translate-x-1 cursor-pointer'}`}
+                onClick={() => irPara(pagina + 1)}
+                disabled={pagina === totalPaginas - 1 || flipping}
+                className={`font-cinzel text-sm transition-all ${pagina === totalPaginas - 1 || flipping ? 'opacity-20 cursor-not-allowed' : 'hover:text-rubric hover:translate-x-1 cursor-pointer'}`}
                 style={{ fontFamily: '"Cinzel", serif' }}
               >
                 Próximo →
@@ -171,6 +193,8 @@ export function Experiencias({ voltar, idioma, toggleIdioma }: ExperienciasProps
           — 3 —
         </div>
       </div>
+
+      {flipping && <LeafOverlay direction={flipDir} />}
     </div>
   );
 }

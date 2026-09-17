@@ -11,10 +11,10 @@ export function SobreMim({ voltar, idioma, toggleIdioma }: SobreMimProps) {
   const t = dicionario[idioma];
 
   return (
-    <div className="flex w-full h-full">
+    <div className="flex flex-col md:flex-row w-full h-full">
       {/* ── Página esquerda ── */}
       <div
-        className="w-1/2 border-r border-ink/15 p-7 md:p-10 flex flex-col relative overflow-hidden"
+        className="w-full md:w-1/2 md:border-r border-ink/15 p-7 md:p-10 flex flex-col relative md:overflow-hidden"
         style={{ fontFamily: '"IM Fell English", serif' }}
       >
         {/* Botão voltar */}
@@ -40,7 +40,7 @@ export function SobreMim({ voltar, idioma, toggleIdioma }: SobreMimProps) {
 
         {/* Texto com drop cap */}
         <div
-          className="drop-cap flex-1 text-lg md:text-xl leading-relaxed text-justify text-ink/90 overflow-y-auto scrollbar-parchment pr-1"
+          className="drop-cap flex-1 text-lg md:text-xl leading-relaxed text-justify text-ink/90 md:overflow-y-auto scrollbar-parchment pr-1"
           style={{ fontFamily: '"IM Fell English", serif' }}
         >
           <p>
@@ -62,7 +62,7 @@ export function SobreMim({ voltar, idioma, toggleIdioma }: SobreMimProps) {
 
       {/* ── Página direita ── */}
       <div
-        className="w-1/2 p-7 md:p-10 flex flex-col relative"
+        className="w-full md:w-1/2 p-7 md:p-10 flex flex-col relative"
         style={{ fontFamily: '"IM Fell English", serif' }}
       >
         {/* Botão de idioma */}
@@ -78,11 +78,11 @@ export function SobreMim({ voltar, idioma, toggleIdioma }: SobreMimProps) {
 
         {/* Texto continuação */}
         <div
-          className="flex-1 text-lg md:text-xl leading-relaxed text-justify text-ink/90 space-y-5 overflow-y-auto scrollbar-parchment pr-1"
+          className="flex-1 text-lg md:text-xl leading-relaxed text-justify text-ink/90 space-y-5 md:overflow-y-auto scrollbar-parchment pr-1"
         >
           <p>
             {t.sobreMim.p2_1}
-            <strong style={{ color: '#8b0000' }}>Node.js</strong>
+            <strong style={{ color: '#8b0000' }}>Java + Spring Boot</strong>
             {t.sobreMim.p2_2}
           </p>
           <p>{t.sobreMim.p3}</p>
@@ -96,7 +96,7 @@ export function SobreMim({ voltar, idioma, toggleIdioma }: SobreMimProps) {
               Arsenal
             </p>
             <div className="flex flex-wrap gap-2">
-              {['React', 'TypeScript', 'Node.js', 'Tailwind', 'Framer Motion', 'Prisma', 'SQL'].map(skill => (
+              {['Java', 'Spring Boot', 'React', 'Next.js', 'TypeScript', 'Node.js', 'PostgreSQL', 'Docker'].map(skill => (
                 <span
                   key={skill}
                   className="text-xs px-2 py-1 border border-ink/25 text-ink/80 hover:border-gold hover:text-gold transition-all"
